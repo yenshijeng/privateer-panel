@@ -40,14 +40,16 @@
   function avatar(npcId) { // 送禮、委託提示旁的小頭像
     var n = NPC_IMG[npcId]; if (!n) return null;
     var box = h('div', { class: 'avatar', style: 'width:38px;height:38px;flex:none;border-radius:50%;overflow:hidden;background:#0a0f20' }, []);
-    box.appendChild(h('img', { src: imgUrl('npc_' + n), loading: 'lazy', alt: '', style: 'width:100%;height:100%;display:block;object-fit:cover;object-position:top', onerror: function () { box.style.display = 'none'; } }));
+    box.appendChild(h('img', { src: imgUrl('npc_' + n), loading: 'lazy', alt: '', style: 'width:100%;height:100%;display:block;object-fit:cover;object-position:center 8%;transform:scale(1.9);transform-origin:50% 12%', onerror: function () { box.style.display = 'none'; } }));
     return box;
   }
   function npcCard(p) {
     var n = NPC_IMG[p.id];
-    return h('div', { class: 'card npccard', 'data-npccard': p.id, style: 'padding:0;overflow:hidden;flex:1 1 44%;min-width:130px;margin:0' }, [
-      n ? picBox('npc_' + n, 'height:170px', 'top') : null,
-      h('div', { style: 'padding:6px 8px' }, [h('b', { text: p.name }), h('div', { class: 'sm dim', text: p.role }), h('div', { class: 'sm', text: p.stage + (p.talk ? '｜委託待談' : '') })])]);
+    // 直式半身像放左邊（寬 110、高 160），臉在畫面上方約兩成處；橫向裁切會只剩頭頂（11/21 真機）
+    var pic = n ? picBox('npc_' + n, 'width:110px;height:160px;flex:none', 'center 12%') : null;
+    return h('div', { class: 'card npccard', 'data-npccard': p.id, style: 'padding:0;overflow:hidden;flex:1 1 44%;min-width:230px;margin:0;display:flex;align-items:stretch' }, [
+      pic,
+      h('div', { style: 'padding:8px 10px;display:flex;flex-direction:column;justify-content:center;gap:2px' }, [h('b', { text: p.name }), h('div', { class: 'sm dim', text: p.role }), h('div', { class: 'sm', text: p.stage + (p.talk ? '｜委託待談' : '') })])]);
   }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(function () { t.style.display = 'none'; }, 2600); }
   function modal(node) { var m = $('modal'); m.firstChild.innerHTML = ''; m.firstChild.appendChild(node); m.style.display = 'flex'; }
