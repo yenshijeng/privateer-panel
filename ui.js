@@ -339,7 +339,9 @@
     if (!tries) { d.at = Date.now(); setTimeout(function () { ingest(d, 1); }, 700); return; }
     if ((!lastStory || lastStoryAt < d.at) && tries < 4) { setTimeout(function () { ingest(d, tries + 1); }, 800); return; }
     var rt = lastStory ? AI.replyText(lastStory.blocks) : '';
-    var r = AI.process(S, d.text, rt, { present: (S.scene && S.scene.present) || [], parley: !!S.parley, id: d.id });
+    // 在場：酒吧場景用 scene.present；沒進酒吧但已停靠時，這座設施的常駐 NPC 也算在場（玩家常用打字或 AI 的按鈕走進酒吧）
+    var pres = (S.scene && S.scene.bar) ? S.scene.present : (S.loc.docked && S.loc.facility ? Mi().npcsAt(S, S.loc.facility) : []);
+    var r = AI.process(S, d.text, rt, { present: pres || [], parley: !!S.parley, id: d.id });
     var msgs = [], after = null;
     if (r.dup) { Br.reply('ingested', { id: d.id, status: 'ok', msg: '已處理過' }); return; }
     if (!r.ok) { S.aiRejected = (S.aiRejected || []).concat([{ evt: { type: '區塊' }, reason: r.reason }]).slice(-10); }
@@ -430,8 +432,8 @@
     var opts = lastStory ? AI.options(lastStory.blocks) : [];
     var box = h('div', { id: 'storyActions' });
     opts.forEach(function (o) {
-      box.appendChild(h('button', { class: 'btn sec hc', style: 'width:100%;margin:4px 0;text-align:left', disabled: busy && !o.tab, 'data-send': o.send, text: o.label, onclick: function () {
-        if (o.tab) { setTab(o.tab); render(); } else { Br.live ? sendFree(o.send) : toast('目前不在對話裡。'); } } }));
+      box.appendChild(h('button', { class: 'btn sec hc', style: 'width:100%;margin:4px 0;text-align:left', disabled: busy && (!o.tab || o.tab === 'bar'), 'data-send': o.send, text: o.label, onclick: function () {
+        if (o.tab === 'bar') { if (busy) return; enterBar(); } else if (o.tab) { setTab(o.tab); render(); } else { Br.live ? sendFree(o.send) : toast('目前不在對話裡。'); } } }));
     });
     if (Br.live && !opts.length && lastStory) {
       [['繼續', '繼續', 0], ['離開酒吧', '我離開酒吧。', 1], ['回船上', '我回到船上。', 1]].forEach(function (g) {

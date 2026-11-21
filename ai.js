@@ -1,4 +1,4 @@
-/* 星域私掠者 AI 溝通模組 ai.js v1.0（Opus）
+/* 星域私掠者 AI 溝通模組 ai.js v1.1（Opus；v1.1：time/note 不需 quote、「進酒吧」選項對應 bar）
  * 協定：星域私掠者/協定_v1.md 第 4 節。純邏輯、不碰 DOM。
  * 瀏覽器掛 window.XYAI（需要先載入 game.js），Node 用 require('./ai.js')(G)。
  *
@@ -98,7 +98,8 @@
       }
       return '未知';
     }
-    var AUTO = { time: 1, affection: 1, note: 1, intimacy: 1, parley: 1 }; // 其餘（tip、item、chain）要玩家確認
+    var AUTO = { time: 1, affection: 1, note: 1, intimacy: 1, parley: 1 };
+    var NEED_QUOTE = { affection: 1, tip: 1, item: 1, chain: 1, intimacy: 1 }; // 其餘（tip、item、chain）要玩家確認
 
     /**
      * ctx = { present:[npc id], parley:bool, id:載入器給的區塊雜湊（去重用） }
@@ -120,7 +121,8 @@
         seen[key] = 1;
         var why = check(save, e, ctx);
         if (why) { out.rejected.push({ evt: e, reason: why }); return; }
-        var qok = quoteOk(e, replyText);
+        // 只有會影響好感、錢、貨、委託、親密的事件要求 quote；time、note、parley 不用（DS 實測常常摘不準）
+        var qok = !NEED_QUOTE[e.type] || quoteOk(e, replyText);
         if (AUTO[e.type] && qok) out.auto.push(e);
         else if (AUTO[e.type] && !qok && e.type !== 'parley') out.confirm.push(Object.assign({ _noQuote: true }, e)); // 引用對不上：降級成玩家確認
         else if (e.type === 'parley') out.auto.push(e); // 交涉結果由面板事先算好的條件結算，不需要引用
@@ -159,7 +161,7 @@
 
     // ---------- 劇情頁的行動按鈕 ----------
     // blocks：載入器 parseMsg 送來的 [{k:'btn',s,t}|{k:'p',t}…]
-    var PANEL_WORDS = [[/市場|買|賣|交易/, 'market'], [/出航|起飛|跳躍|離港/, 'map'], [/任務電腦|接任務/, 'missions'], [/船塢|改裝|修理|換船/, 'yard']];
+    var PANEL_WORDS = [[/^(?!.*離開).*(進|去|走進|到|回)酒吧/, 'bar'], [/市場|買|賣|交易/, 'market'], [/出航|起飛|跳躍|離港/, 'map'], [/任務電腦|接任務/, 'missions'], [/船塢|改裝|修理|換船/, 'yard']];
     function options(blocks) {
       var out = [];
       (blocks || []).forEach(function (b) { if (b.k === 'btn') out.push({ label: b.t, send: b.s || b.t }); });
@@ -184,7 +186,7 @@
     }
 
     return { parse: parse, check: check, process: process, apply: apply, options: options, replyText: replyText,
-      quoteOk: quoteOk, intimacyOpen: intimacyOpen, AFF_DAY_CAP: AFF_DAY_CAP, ver: '1.0' };
+      quoteOk: quoteOk, intimacyOpen: intimacyOpen, AFF_DAY_CAP: AFF_DAY_CAP, ver: '1.1' };
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = factory;
   else root.XYAI = factory(root.XYGame);
