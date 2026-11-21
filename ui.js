@@ -1,4 +1,4 @@
-/* 星域私掠者 面板畫面 ui.js（v0.9：交涉、人情價、送禮、對話備份） */
+/* 星域私掠者 面板畫面 ui.js（v0.10：艦橋圖片） */
 (function () {
   'use strict';
   var G = window.XYGame, C = window.XYCombat, AI = window.XYAI, Br = window.XYBridge;
@@ -26,6 +26,29 @@
     return e;
   }
   function fmt(n) { return Math.round(n).toLocaleString(); }
+  // ---------- 圖片（Sonnet-10）：載入失敗一律隱藏，不擋畫面 ----------
+  var IMG_BASE = 'https://res.cloudinary.com/zerzrnhd/image/upload/v1795268376/';
+  var NPC_IMG = { npc_ke_xuetang: 'ke', npc_ge_li: 'ge', npc_lei_zhilan: 'lei', npc_yi_man: 'yi', npc_lu_shuang: 'lu', npc_qiao_wei: 'qiao' };
+  var SHIP_IMG = { donkey: 1, falcon: 1, albatross: 1, badger: 1, whaleshark: 1 };
+  function imgUrl(name) { return IMG_BASE + 'ss_' + name + '.png'; }
+  // 固定高度的容器＋裡面 width:100% 的圖（cover）。失敗時整個容器隱藏
+  function picBox(name, boxStyle, pos, attrs) {
+    var box = h('div', Object.assign({ class: 'pic', style: 'width:100%;overflow:hidden;background:#0a0f20;' + (boxStyle || '') }, attrs || {}), []);
+    box.appendChild(h('img', { src: imgUrl(name), loading: 'lazy', alt: '', style: 'width:100%;height:100%;display:block;object-fit:cover;object-position:' + (pos || 'center'), onerror: function () { box.style.display = 'none'; } }));
+    return box;
+  }
+  function avatar(npcId) { // 送禮、委託提示旁的小頭像
+    var n = NPC_IMG[npcId]; if (!n) return null;
+    var box = h('div', { class: 'avatar', style: 'width:38px;height:38px;flex:none;border-radius:50%;overflow:hidden;background:#0a0f20' }, []);
+    box.appendChild(h('img', { src: imgUrl('npc_' + n), loading: 'lazy', alt: '', style: 'width:100%;height:100%;display:block;object-fit:cover;object-position:top', onerror: function () { box.style.display = 'none'; } }));
+    return box;
+  }
+  function npcCard(p) {
+    var n = NPC_IMG[p.id];
+    return h('div', { class: 'card npccard', 'data-npccard': p.id, style: 'padding:0;overflow:hidden;flex:1 1 44%;min-width:130px;margin:0' }, [
+      n ? picBox('npc_' + n, 'height:170px', 'top') : null,
+      h('div', { style: 'padding:6px 8px' }, [h('b', { text: p.name }), h('div', { class: 'sm dim', text: p.role }), h('div', { class: 'sm', text: p.stage + (p.talk ? '｜委託待談' : '') })])]);
+  }
   function toast(msg) { var t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(function () { t.style.display = 'none'; }, 2600); }
   function modal(node) { var m = $('modal'); m.firstChild.innerHTML = ''; m.firstChild.appendChild(node); m.style.display = 'flex'; }
   function closeModal() { $('modal').style.display = 'none'; }
@@ -114,6 +137,7 @@
     var v = $('view'); v.innerHTML = ''; $('view').style.top = '0';
     var sel = 'pilot';
     var card = h('div', { class: 'card' });
+    var cover = picBox('cover', 'height:210px;border-radius:8px;margin-bottom:8px', 'center 30%', { id: 'coverpic' });
     var name = h('input', { placeholder: '船長名字（最多 12 字）', maxlength: 12 });
     var shipName = h('input', { placeholder: '船名（最多 10 字，不填就叫驢號）', maxlength: 10, id: 'shipname' });
     var gender = h('select', null, ['男', '女', '其他'].map(function (g) { return h('option', { text: g }); }));
@@ -127,7 +151,7 @@
       });
     }
     drawOrigins();
-    [h('h3', { text: '星域私掠者' }), h('div', { class: 'dim sm', text: '你分到一艘舊驢號貨船、3,000 信用點，和一筆 20,000 的船貸。先跑貨還債，再看要不要走偏門。' }),
+    [cover, h('h3', { text: '星域私掠者' }), h('div', { class: 'dim sm', text: '你分到一艘舊驢號貨船、3,000 信用點，和一筆 20,000 的船貸。先跑貨還債，再看要不要走偏門。' }),
     h('label', { text: '名字' }), name, h('label', { text: '船名' }), shipName, h('label', { text: '性別' }), gender, h('label', { text: '外貌' }), look,
     h('label', { text: '出身（決定小幅加成與初始人脈）' }), list,
     h('div', { style: 'margin-top:12px' }, [h('button', { class: 'btn', text: '出發', onclick: function () {
@@ -176,6 +200,13 @@
     svg.setAttribute('style', 'width:100%;background:#0a0f20;border-radius:10px;border:1px solid var(--line)');
     function se(parent, tag, a, txt) { var e = document.createElementNS(NS, tag); Object.keys(a).forEach(function (k) { e.setAttribute(k, a[k]); }); if (txt) e.textContent = txt; parent.appendChild(e); return e; }
     var big = mapView === 'global' ? 1 : 0.62;  // 全域檢視字級放大，手機才讀得到
+    var defs = document.createElementNS(NS, 'defs'); svg.appendChild(defs);
+    sects.forEach(function (k) { // 各星區框的淡背景（失敗就沒有）
+      var b0 = bb[k], cp = document.createElementNS(NS, 'clipPath'); cp.setAttribute('id', 'clip_' + k); defs.appendChild(cp);
+      se(cp, 'rect', { x: b0.x0, y: b0.y0, width: b0.x1 - b0.x0, height: b0.y1 - b0.y0, rx: 30 });
+      var im = document.createElementNS(NS, 'image'); [['href', imgUrl('sector_' + k)], ['x', b0.x0], ['y', b0.y0], ['width', b0.x1 - b0.x0], ['height', b0.y1 - b0.y0], ['preserveAspectRatio', 'xMidYMid slice'], ['opacity', 0.25], ['clip-path', 'url(#clip_' + k + ')'], ['data-sectorpic', k]].forEach(function (a) { im.setAttribute(a[0], a[1]); });
+      im.addEventListener('error', function () { im.style.display = 'none'; }); svg.appendChild(im);
+    });
     sects.forEach(function (k) {
       var b0 = bb[k]; se(svg, 'rect', { x: b0.x0, y: b0.y0, width: b0.x1 - b0.x0, height: b0.y1 - b0.y0, rx: 30, fill: SECT_COL[k], 'fill-opacity': 0.13, stroke: SECT_COL[k], 'stroke-opacity': 0.35, 'stroke-width': 3, 'data-sector': k });
       se(svg, 'text', { x: b0.x0 + 16, y: b0.y0 + 36 * big + 8, fill: SECT_COL[k], 'font-size': 36 * big, 'font-weight': 700, 'fill-opacity': 0.9 }, D.sectors[k].name);
@@ -408,12 +439,17 @@
   }
 
   function viewStory(v) {
-    var fac = G.dockedFac(S), pcs = parleyCard(); if (pcs) v.appendChild(pcs);
+    var fac = G.dockedFac(S), pcs = parleyCard(), secK = G.curSystem(S)._sector;
+    if (S.scene.bar) v.appendChild(picBox('bar_' + secK, 'height:140px;border-radius:10px;margin-bottom:8px', 'center', { id: 'storybanner', 'data-banner': 'bar' }));
+    else if (!S.loc.docked) v.appendChild(picBox('sector_' + secK, 'height:140px;border-radius:10px;margin-bottom:8px', 'center', { id: 'storybanner', 'data-banner': 'sector' }));
+    if (pcs) v.appendChild(pcs);
     if ((S.convTurns || 0) >= 80 && !S.turnHinted) v.appendChild(h('div', { class: 'card', id: 'turnHint' }, [h('div', { text: '這段對話已經很長了，建議先存劇情摘要，再開新對話。' }),
       h('div', { class: 'row', style: 'gap:8px;margin-top:6px' }, [h('button', { class: 'btn sm', text: '📜 存劇情摘要', disabled: !Br.live || busy, onclick: function () { S.turnHinted = true; persist(); sendFree('【劇情存檔】請依約定格式寫目前的劇情摘要。'); } }),
         h('button', { class: 'btn sec sm', 'data-turnhint-ok': 1, text: '知道了', onclick: function () { S.turnHinted = true; persist(); render(); } })])]));
     if (fac && fac.services.indexOf('bar') >= 0 && Mi().npcsAt(S, fac.id).length && !S.scene.bar)
       v.appendChild(h('button', { class: 'btn', id: 'enterBar', style: 'width:100%;margin-bottom:8px', disabled: busy, text: '🍸 進酒吧', onclick: enterBar }));
+    var pinfo = G.presentInfo(S);
+    if (pinfo.length) v.appendChild(h('div', { id: 'npcrow', style: 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px' }, pinfo.map(npcCard)));
     if (!Br.live) v.appendChild(h('div', { class: 'card' }, [h('div', { class: 'dim', text: '目前不在對話裡' }), h('div', { class: 'sm dim', text: '其他頁面都能照常使用。' })]));
     var card = h('div', { class: 'card', id: 'storyCard' });
     if (Br.live && !lastStory) card.appendChild(h('div', { class: 'dim', text: '還沒有 AI 的回覆。在下面的對話框說些什麼，或用上方的按鈕開始。' }));
@@ -454,13 +490,13 @@
     var Mm = Mi();
     if (S.scene.bar) S.scene.present.forEach(function (id) {
       var gc = G.giftCheck(S, id), nm = Mm.NPCS[id].name;
-      v.appendChild(h('div', { class: 'row', style: 'gap:8px;align-items:center;margin:4px 0' }, [
+      v.appendChild(h('div', { class: 'row', style: 'gap:8px;align-items:center;margin:4px 0' }, [avatar(id),
         h('button', { class: 'btn sec sm', 'data-gift': id, disabled: !gc.ok || busy, text: '🎁 送禮', onclick: function () { doGift(id); } }),
         h('span', { class: 'sm dim', text: nm + (gc.ok ? '：' + gc.goods.map(function (x) { return G.data().goods[x].name; }).join('、') + ' 可以送' : '：' + gc.why + (gc.want ? '（她喜歡：' + gc.want.join('、') + '）' : '')) })]));
     });
     (S.scene.bar ? S.scene.present : (fac ? Mm.npcsAt(S, fac.id) : [])).forEach(function (id) {
       var n = Mm.npcInfo(S, id);
-      if (n.pending === 'talk') v.appendChild(h('button', { class: 'btn sm', 'data-talkto': id, style: 'margin:4px 0', disabled: busy || !Br.live, text: '去找' + n.name + '談', onclick: function () { sendFree('我去找' + n.name + '談。'); } }));
+      if (n.pending === 'talk') v.appendChild(h('div', { class: 'row', style: 'gap:8px;align-items:center;margin:4px 0' }, [avatar(id), h('button', { class: 'btn sm', 'data-talkto': id, disabled: busy || !Br.live, text: '去找' + n.name + '談', onclick: function () { sendFree('我去找' + n.name + '談。'); } })]));
     });
     var ap = (S.aiApplied || []), rj = (S.aiRejected || []);
     if (ap.length || rj.length) v.appendChild(sect('aiRej', 'AI 提出但未採用', function (b) {
@@ -648,9 +684,11 @@
       h('div', { class: 'sm dim', text: '目前：' + cur.name + '「' + S.ship.name + '」。換船 ' + G.SWAP_HOURS + ' 小時，新船滿血、船名沿用；保險繼續有效到期，下次保費照新船算。' })]);
     G.yardHulls(S).forEach(function (H) {
       var isCur = H.id === S.ship.hull;
-      card.appendChild(h('div', { class: 'opt' + (isCur ? ' on' : ''), 'data-hull': H.id }, [h('div', { class: 'row sb' }, [h('span', null, [h('b', { text: H.name }), h('span', { class: 'sm dim', text: '　' + H.class }), isCur ? h('span', { class: 'tag p', text: '目前' }) : null]), h('b', { text: fmt(H.price) })]),
+      var thumb = SHIP_IMG[H.id] ? h('div', { style: 'width:84px;flex:none;margin-right:10px' }, [picBox('ship_' + H.id, 'aspect-ratio:1/1;border-radius:8px', 'center', { 'data-shippic': H.id })]) : null;
+      var body = h('div', { style: 'flex:1;min-width:0' }, [h('div', { class: 'row sb' }, [h('span', null, [h('b', { text: H.name }), h('span', { class: 'sm dim', text: '　' + H.class }), isCur ? h('span', { class: 'tag p', text: '目前' }) : null]), h('b', { text: fmt(H.price) })]),
         h('div', { class: 'sm dim', text: H.desc }), hullStats(H, cur),
-        isCur ? null : h('button', { class: 'btn sm', style: 'margin-top:6px', 'data-swap': H.id, text: '試算換船', onclick: function () { swapModal(H.id); } })]));
+        isCur ? null : h('button', { class: 'btn sm', style: 'margin-top:6px', 'data-swap': H.id, text: '試算換船', onclick: function () { swapModal(H.id); } })]);
+      card.appendChild(h('div', { class: 'opt' + (isCur ? ' on' : ''), 'data-hull': H.id, style: 'display:flex;align-items:flex-start' }, [thumb, body]));
     });
     v.appendChild(card);
   }
@@ -730,7 +768,17 @@
     d.addEventListener('toggle', function () { moreOpen[key] = d.open; });
     var body = h('div'); fn(body); d.appendChild(body); return d;
   }
+  function shipCard(b) {
+    var D = G.data(), H = D.hulls[S.ship.hull], mx = G.shipMax(S);
+    var row = h('div', { class: 'row', style: 'gap:12px;align-items:flex-start' }, [
+      SHIP_IMG[S.ship.hull] ? h('div', { style: 'width:132px;flex:none' }, [picBox('ship_' + S.ship.hull, 'aspect-ratio:1/1;border-radius:10px', 'center', { id: 'shippic' })]) : null,
+      h('div', { style: 'flex:1;min-width:0' }, [h('b', { text: '「' + S.ship.name + '」' }), h('div', { class: 'sm dim', text: H.name + '級' + H.class }),
+        h('div', { class: 'sm', style: 'margin-top:6px', text: '船體 ' + S.ship.hp.hull + '／' + mx.hull }), h('div', { class: 'sm', text: '裝甲 ' + S.ship.hp.armor + '／' + mx.armor }),
+        h('div', { class: 'sm', text: '貨艙 ' + (G.cargoCap(S) - G.cargoFree(S)) + '／' + G.cargoCap(S) })])]);
+    b.appendChild(row);
+  }
   function viewMore(v) {
+    v.appendChild(sect('ship', '船況', shipCard));
     v.appendChild(sect('log', '航行日誌', function (b) {
       var L = S.log.slice().reverse(); if (!L.length) b.appendChild(h('div', { class: 'dim', text: '還沒有紀錄。' }));
       L.slice(0, 60).forEach(function (e) { b.appendChild(h('div', { class: 'sm', style: 'padding:3px 0;border-bottom:1px solid var(--line)' }, [h('span', { class: 'dim', text: G.fmtClock(e.t) + '　' }), e.x])); });
