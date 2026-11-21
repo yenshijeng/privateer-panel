@@ -971,5 +971,19 @@
     } }));
   }
 
+  // 背景音樂（Suno 嵌入）：第一次按 🎵 才載入播放器（瀏覽器要求使用者先點過才能自動播放）；
+  // 之後按 🎵 只收合／展開播放器，iframe 不移除，所以切換分頁、收起艦橋都不會中斷音樂。
+  var MUSIC_URL = 'https://suno.com/embed/hgQiaLi4dij0cbjO?autoplay=1';
+  (function () {
+    var b = $('mbtn'), box = $('music'); if (!b || !box) return;
+    b.onclick = function () {
+      if (!box.firstChild) {
+        var f = document.createElement('iframe');
+        f.src = MUSIC_URL; f.setAttribute('allow', 'autoplay; encrypted-media'); f.setAttribute('title', '背景音樂');
+        box.appendChild(f);
+      }
+      var on = box.className !== 'show'; box.className = on ? 'show' : ''; b.className = 'on';
+    };
+  })();
   boot();
 })();
