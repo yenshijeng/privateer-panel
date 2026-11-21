@@ -1,4 +1,4 @@
-/* 星域私掠者 AI 溝通模組 ai.js v1.1（Opus；v1.1：time/note 不需 quote、「進酒吧」選項對應 bar）
+/* 星域私掠者 AI 溝通模組 ai.js v1.2（Opus；v1.1：time/note 不需 quote、「進酒吧」選項對應 bar；v1.2：quote 改用兩字詞重疊率比對）
  * 協定：星域私掠者/協定_v1.md 第 4 節。純邏輯、不碰 DOM。
  * 瀏覽器掛 window.XYAI（需要先載入 game.js），Node 用 require('./ai.js')(G)。
  *
@@ -36,10 +36,16 @@
       return String(s || '').replace(/[！-～]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
         .replace(/[\s　，。、！？；：「」『』（）《》〈〉…—\-,.!?;:'"()\[\]]/g, '');
     }
+    // DS 實測：quote 常改寫幾個字（換詞、增刪虛字），只比子字串幾乎都對不上。
+    // 先比子字串；不中再看重疊率：兩字詞六成以上出現在正文，或兩字詞四成以上且單字七成五以上，就算對得上。
     function quoteOk(evt, reply) {
-      var q = norm(evt.quote);
-      if (q.length < 4) return false;
-      return norm(reply).indexOf(q.length > 24 ? q.slice(0, 24) : q) >= 0;
+      var q = norm(evt.quote), r = norm(reply);
+      if (q.length < 4 || !r) return false;
+      if (r.indexOf(q.length > 24 ? q.slice(0, 24) : q) >= 0) return true;
+      var grams = {}, n = 0, hit = 0, cn = 0, ch = 0;
+      for (var i = 0; i < q.length - 1; i++) { var g = q.substr(i, 2); if (grams[g]) continue; grams[g] = 1; n++; if (r.indexOf(g) >= 0) hit++; }
+      for (var j = 0; j < q.length; j++) { cn++; if (r.indexOf(q.charAt(j)) >= 0) ch++; }
+      return n >= 3 && (hit / n >= 0.6 || (hit / n >= 0.4 && ch / cn >= 0.75));
     }
 
     // ---------- 驗證（協定 4.3／4.4） ----------
@@ -122,7 +128,7 @@
         var why = check(save, e, ctx);
         if (why) { out.rejected.push({ evt: e, reason: why }); return; }
         // 只有會影響好感、錢、貨、委託、親密的事件要求 quote；time、note、parley 不用（DS 實測常常摘不準）
-        var qok = !NEED_QUOTE[e.type] || quoteOk(e, replyText);
+        var qok = !NEED_QUOTE[e.type] || (e.type === 'affection' && Math.abs(e.delta) <= 2) || quoteOk(e, replyText); // 小幅好感（±2 以內）有每日上限把關，不再卡 quote
         if (AUTO[e.type] && qok) out.auto.push(e);
         else if (AUTO[e.type] && !qok && e.type !== 'parley') out.confirm.push(Object.assign({ _noQuote: true }, e)); // 引用對不上：降級成玩家確認
         else if (e.type === 'parley') out.auto.push(e); // 交涉結果由面板事先算好的條件結算，不需要引用
@@ -186,7 +192,7 @@
     }
 
     return { parse: parse, check: check, process: process, apply: apply, options: options, replyText: replyText,
-      quoteOk: quoteOk, intimacyOpen: intimacyOpen, AFF_DAY_CAP: AFF_DAY_CAP, ver: '1.1' };
+      quoteOk: quoteOk, intimacyOpen: intimacyOpen, AFF_DAY_CAP: AFF_DAY_CAP, ver: '1.2' };
   }
   if (typeof module !== 'undefined' && module.exports) module.exports = factory;
   else root.XYAI = factory(root.XYGame);
