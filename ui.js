@@ -161,6 +161,13 @@
       var xs = [], ys = []; all.forEach(function (s) { if (s._sector === k) { xs.push(s.pos.x); ys.push(1000 - s.pos.y); } });
       bb[k] = { x0: Math.min.apply(null, xs) - 55, x1: Math.max.apply(null, xs) + 55, y0: Math.min.apply(null, ys) - 85, y1: Math.max.apply(null, ys) + 45 };
     });
+    // 星區框不可重疊：上下相疊又左右相交的兩框，從兩框之間的空隙中線切開（各留 6 的間距）
+    sects.forEach(function (a) { sects.forEach(function (c) {
+      var A = bb[a], C = bb[c]; if (a >= c || A.x1 <= C.x0 || C.x1 <= A.x0) return;
+      var up = A.y0 < C.y0 ? A : C, dn = up === A ? C : A;
+      if (up.y1 <= dn.y0) return;
+      var mid = (up.y1 + dn.y0) / 2; up.y1 = mid - 6; dn.y0 = mid + 6;
+    }); });
     var vb;
     if (mapView === 'sector') { var b0 = bb[cur._sector]; vb = [b0.x0 - 20, b0.y0 - 20, b0.x1 - b0.x0 + 40, b0.y1 - b0.y0 + 40]; }
     else vb = [0, 0, 1000, 1000];
