@@ -53,7 +53,7 @@
       $('view').innerHTML = '<div class="card"><h3>請用網頁伺服器開啟</h3><p>直接雙擊 index.html 時，瀏覽器不讓程式讀取資料檔。請在 panel 資料夾執行 <b>npx http-server panel</b>，或用 VS Code 的 Live Server 開啟。</p></div>';
       return;
     }
-    Promise.all(FILES.map(function (f) { return fetch('data/' + f + '.json').then(function (r) { if (!r.ok) throw new Error(f); return r.json(); }); }))
+    Promise.all(FILES.map(function (f) { return fetch('data/' + f + '.json?v=' + (window.XY_BUILD || Date.now())).then(function (r) { if (!r.ok) throw new Error(f); return r.json(); }); }))
       .then(function (a) {
         G.init({ goods: a[0], factions: a[1], sectors: a[2], systemFiles: [a[3], a[4], a[5], a[6]], encounters: a[7], ships: a[8], missions: a[9], npcs: a[10] });
         var raw = null; try { raw = localStorage.getItem(G.SAVE_KEY); } catch (e) { }
