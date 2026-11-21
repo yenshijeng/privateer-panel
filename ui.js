@@ -204,12 +204,12 @@
     sects.forEach(function (k) { // 各星區框的淡背景（失敗就沒有）
       var b0 = bb[k], cp = document.createElementNS(NS, 'clipPath'); cp.setAttribute('id', 'clip_' + k); defs.appendChild(cp);
       se(cp, 'rect', { x: b0.x0, y: b0.y0, width: b0.x1 - b0.x0, height: b0.y1 - b0.y0, rx: 30 });
-      var im = document.createElementNS(NS, 'image'); [['href', imgUrl('sector_' + k)], ['x', b0.x0], ['y', b0.y0], ['width', b0.x1 - b0.x0], ['height', b0.y1 - b0.y0], ['preserveAspectRatio', 'xMidYMid slice'], ['opacity', 0.25], ['clip-path', 'url(#clip_' + k + ')'], ['data-sectorpic', k]].forEach(function (a) { im.setAttribute(a[0], a[1]); });
+      var im = document.createElementNS(NS, 'image'); [['href', imgUrl('sector_' + k)], ['x', b0.x0], ['y', b0.y0], ['width', b0.x1 - b0.x0], ['height', b0.y1 - b0.y0], ['preserveAspectRatio', 'xMidYMid slice'], ['opacity', 0.5], ['style', 'filter:brightness(1.6)'], ['clip-path', 'url(#clip_' + k + ')'], ['data-sectorpic', k]].forEach(function (a) { im.setAttribute(a[0], a[1]); });
       im.addEventListener('error', function () { im.style.display = 'none'; }); svg.appendChild(im);
     });
     sects.forEach(function (k) {
       var b0 = bb[k]; se(svg, 'rect', { x: b0.x0, y: b0.y0, width: b0.x1 - b0.x0, height: b0.y1 - b0.y0, rx: 30, fill: SECT_COL[k], 'fill-opacity': 0.13, stroke: SECT_COL[k], 'stroke-opacity': 0.35, 'stroke-width': 3, 'data-sector': k });
-      se(svg, 'text', { x: b0.x0 + 16, y: b0.y0 + 36 * big + 8, fill: SECT_COL[k], 'font-size': 36 * big, 'font-weight': 700, 'fill-opacity': 0.9 }, D.sectors[k].name);
+      se(svg, 'text', { x: b0.x0 + 16, y: b0.y0 + 36 * big + 8, 'paint-order': 'stroke', stroke: '#05080d', 'stroke-linejoin': 'round', 'stroke-width': 6, fill: SECT_COL[k], 'font-size': 36 * big, 'font-weight': 700, 'fill-opacity': 0.9 }, D.sectors[k].name);
     });
     var drawn = {};
     all.forEach(function (s) {
@@ -218,7 +218,7 @@
         var key = [s.id, l.to].sort().join('|'); if (drawn[key]) return; drawn[key] = 1;
         var near = (cur.id === s.id || cur.id === l.to), choke = s._sector !== t._sector;
         se(svg, 'line', { x1: s.pos.x, y1: 1000 - s.pos.y, x2: t.pos.x, y2: 1000 - t.pos.y, stroke: near ? '#5b8be0' : choke ? '#7a6a3a' : '#26325a', 'stroke-width': near ? 4 : 2.5, 'stroke-dasharray': choke ? '10 8' : '' });
-        se(svg, 'text', { x: (s.pos.x + t.pos.x) / 2, y: (2000 - s.pos.y - t.pos.y) / 2 - 6, fill: '#6f7db0', 'font-size': 20 * (mapView === 'global' ? 1.2 : 1) , 'text-anchor': 'middle' }, G.flightHours(S, l.dist) + 'h');
+        se(svg, 'text', { x: (s.pos.x + t.pos.x) / 2, y: (2000 - s.pos.y - t.pos.y) / 2 - 6, 'paint-order': 'stroke', stroke: '#05080d', 'stroke-linejoin': 'round', 'stroke-width': 4, fill: '#8f9cd0', 'font-size': 20 * (mapView === 'global' ? 1.2 : 1) , 'text-anchor': 'middle' }, G.flightHours(S, l.dist) + 'h');
       });
     });
     all.forEach(function (s) {
@@ -227,7 +227,7 @@
       se(g, 'circle', { cx: s.pos.x, cy: 1000 - s.pos.y, r: r, fill: DCOL[s.danger] || '#888', stroke: selSys === s.id ? '#fff' : here ? '#4fb3ff' : '#0a0f20', 'stroke-width': here || selSys === s.id ? 6 : 3, opacity: here || nb || ex ? 1 : 0.6 });
       if (!s.facilities.length) se(g, 'circle', { cx: s.pos.x, cy: 1000 - s.pos.y, r: r * 0.4, fill: '#0a0f20' });   // 空心＝沒有設施，不能停靠
       if (!ex) se(g, 'text', { x: s.pos.x, y: 1000 - s.pos.y + 8, fill: '#0a0f20', 'font-size': 24, 'font-weight': 700, 'text-anchor': 'middle' }, '?');
-      se(g, 'text', { x: s.pos.x, y: 1000 - s.pos.y + r + 26 * (mapView === 'global' ? 1.15 : 1), fill: '#e6ebff', 'font-size': 24 * (mapView === 'global' ? 1.15 : 1), 'text-anchor': 'middle' }, s.name);
+      se(g, 'text', { x: s.pos.x, y: 1000 - s.pos.y + r + 26 * (mapView === 'global' ? 1.15 : 1), 'paint-order': 'stroke', stroke: '#05080d', 'stroke-linejoin': 'round', 'stroke-width': 5, fill: '#e6ebff', 'font-size': 24 * (mapView === 'global' ? 1.15 : 1), 'text-anchor': 'middle' }, s.name);
       g.addEventListener('click', function () { selSys = s.id; selDest = nb ? s.id : null; render(); });
     });
     var bc = bountyCard(); if (bc) v.appendChild(bc);
