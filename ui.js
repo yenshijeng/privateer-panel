@@ -316,7 +316,9 @@
   }
   function sendRaw(text) {
     lastSendAt = Date.now();
-    Br.send(text, {});
+    // 送出後留在艦橋、切到劇情頁等 AI 回覆（11/21 真機：原本 keep:false 會把艦橋縮到右下角）
+    Br.send(text, { keep: true });
+    if (tab !== 'story' && !(S && S.battle)) { setTab('story'); try { render(); } catch (e) {} }
   }
   function flushQ() {
     clearTimeout(flushT); flushT = null;
