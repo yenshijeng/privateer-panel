@@ -1,0 +1,7 @@
+{"factions":[
+{"id":"league","name":"港務聯盟","short":"聯盟","color":"#3fa7d6","banned":["slaves","drone_core"],"relations":{"fleet":"friendly","redsail":"hostile","relic":"neutral"},"desc":"商會聯合體，講信用和契約。握有港口、船貸與運貨生意，最痛恨奴工買賣。"},
+{"id":"fleet","name":"邊防艦隊","short":"艦隊","color":"#5b7bd5","banned":["arms","drone_core"],"relations":{"league":"friendly","redsail":"nemesis","relic":"wary"},"desc":"各星區民兵整編成的軍隊，紀律嚴、預算少。嚴查軍火私貨，對海盜毫不留情。"},
+{"id":"redsail","name":"赤帆團","short":"赤帆","color":"#c0392b","banned":[],"relations":{"league":"hostile","fleet":"nemesis","relic":"neutral"},"desc":"海盜聯盟，有自己的規矩：不坑自己人，什麼貨都收。靠走私、劫掠與黑市過活。"},
+{"id":"relic","name":"遺環會","short":"遺環","color":"#b58bd6","banned":[],"relations":{"league":"neutral","fleet":"wary","redsail":"neutral"},"desc":"研究舊環門殘骸的拾荒教派，神祕、出價高。收購遺物，厭惡有人毀損它們。"},
+{"id":"rust","name":"鏽蜂無人機群","short":"鏽蜂","color":"#a0522d","banned":[],"relations":{"league":"nemesis","fleet":"nemesis","redsail":"nemesis","relic":"nemesis"},"desc":"舊環門吐出的自律無人機，外殼鏽蝕、成群行動。無法交涉，擊毀後可回收零件。"}
+]}

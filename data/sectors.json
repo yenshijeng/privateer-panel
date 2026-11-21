@@ -1,0 +1,12 @@
+{"sectors":[
+{"id":"anchor","name":"錨點星區","owner":"league","danger":[0,2],"desc":"新手區。農業殖民地、礦場與港口集中在這裡，聯盟的總港錨港是多數船長的起點。"},
+{"id":"bastion","name":"鐵壁星區","owner":"fleet","danger":[1,3],"desc":"工業與軍港星區。裝備最齊全，邊防艦隊查緝也最嚴，貨艙裡的私貨要小心。"},
+{"id":"mist","name":"迷霧星區","owner":"redsail","danger":[2,4],"desc":"星雲干擾感測器的灰色地帶。走私客、黑市和赤帆團的海盜窩都藏在霧裡。"},
+{"id":"wreck","name":"巨骸星區","owner":"relic","danger":[3,5],"desc":"斷環留下的殘骸區。遺物與高價回收品遍地，也是鏽蜂無人機群的巢穴。"}
+],
+"chokepoints":[
+{"from":"anc_06","to":"bas_01"},
+{"from":"anc_05","to":"mis_01"},
+{"from":"bas_06","to":"wrk_01"},
+{"from":"mis_06","to":"wrk_02"}
+]}

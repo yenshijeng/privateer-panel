@@ -1,0 +1,196 @@
+{
+  "_todo": [
+    "柯雪棠喜歡的冷凍水果在 goods.json 沒有對應商品，giftGoods 暫用最接近的奢侈品「星域香料」(spice)；若之後新增水果類商品再換。",
+    "perk.value 為暫定值（intel 的 value 代表多出 1 個任務；折扣類為比例），T11 跑模擬時再調。",
+    "葛黎喜歡的「好工具」對應 machinery 過重（vol 2），giftGoods 改用熱食（真空口糧）與烈酒。",
+    "雷芷嵐喜歡的家鄉穀物酒沒有精確商品，用蒸餾烈酒與溫室穀物代替。"
+  ],
+  "npcs": [
+    {
+      "id": "npc_ke_xuetang",
+      "name": "柯雪棠",
+      "sector": "anchor",
+      "facility": "anc_01_port",
+      "gender": "female",
+      "age": 31,
+      "role": "酒吧老闆娘，前聯盟稽核員",
+      "look": "黑長髮隨手挽起，戴細框眼鏡，袖子永遠捲到手肘；吧台底下放著一本手寫帳簿。",
+      "personality": "精明愛算帳，毒舌但公道，收帳從不手軟。",
+      "voice": "短句帶數字，愛說「這筆帳」；認真時會摘下眼鏡。",
+      "core": {
+        "mask": "精明、愛算帳、毒舌但公道；收帳從不手軟",
+        "want": "還清父親留下的債，買回被聯盟董事會收走的家族貨運執照",
+        "wound": "曾當聯盟稽核員，因揭發董事做假帳被踢出來，對「契約」既依賴又不信任",
+        "leverage": "玩家也欠聯盟船貸，她看得懂那份合約的陷阱",
+        "hook": "玩家第一次進酒吧，她把玩家的船貸合約條款背了出來：「第 14 條，你簽之前沒看吧。」"
+      },
+      "likes": ["準時、守信、乾淨的帳", "冷凍水果（奢侈品）"],
+      "dislikes": ["賴帳的人", "赤帆團"],
+      "giftGoods": ["spice"],
+      "stages": ["陌生", "熟客", "信任", "親密", "伴侶"],
+      "chain": [
+        { "step": 1, "needAffection": 20, "template": "m_npc_ke_1", "talk": false, "seed": "把一份加密帳冊送到鐵壁星區的律師手上，途中有人想攔。" },
+        { "step": 2, "needAffection": 40, "template": "m_npc_ke_2", "talk": true, "seed": "到迷霧查一艘幽靈貨船的真實船東，回來和她對質出證據。" },
+        { "step": 3, "needAffection": 70, "template": "m_npc_ke_3", "talk": false, "seed": "護送她去董事會聽證，董事雇了海盜在咽喉航線伏擊。" }
+      ],
+      "intimacy": { "needAffection": 60, "needStep": 2 },
+      "perk": { "type": "intel", "value": 1, "at": 40 },
+      "image": "ss_npc_ke.png"
+    },
+    {
+      "id": "npc_ge_li",
+      "name": "葛黎",
+      "sector": "anchor",
+      "facility": "anc_03_mine",
+      "gender": "female",
+      "age": 34,
+      "role": "船艙維修技師，下班在礦工酒館打牌",
+      "look": "高挑結實，手臂滿是焊燙疤，深棕短髮；工作服袖子綁在腰上，背心沾滿油污。",
+      "personality": "好脾氣、話少、手巧；牌桌上會故意輸給沒錢的礦工。",
+      "voice": "慢而樸實，習慣用修船的話講人生。",
+      "core": {
+        "mask": "好脾氣、話少、手很巧；牌桌上會故意輸給沒錢的礦工，礦場的人都叫她「黎姐」",
+        "want": "攢錢讓整個礦場的人搬離快要塌陷的礦脈",
+        "wound": "以前在聯盟大船廠當主任技師，一次事故害死兩個學徒，從此不敢接大船的案子",
+        "leverage": "玩家的驢級破船需要她；她需要一個願意冒險跑貨的人",
+        "hook": "玩家的船第一次進維修棚，她敲了敲船殼，就說出上一任船主出過什麼事"
+      },
+      "likes": ["好工具", "熱食", "有人陪她喝到天亮"],
+      "dislikes": ["拿人命省成本的老闆"],
+      "giftGoods": ["rations", "spirits"],
+      "stages": ["陌生", "熟客", "信任", "親密", "伴侶"],
+      "chain": [
+        { "step": 1, "needAffection": 20, "template": "m_npc_ge_1", "talk": false, "seed": "從鐵壁運一批礦坑支撐架回來，期限很緊。" },
+        { "step": 2, "needAffection": 40, "template": "m_npc_ge_2", "talk": false, "seed": "礦坑塌陷，被困礦工要靠玩家的船把救生艙拖出來。" },
+        { "step": 3, "needAffection": 70, "template": "m_npc_ge_3", "talk": true, "seed": "去巨骸回收舊環時代的大型穩定器，她得面對再接大案子。" }
+      ],
+      "intimacy": { "needAffection": 60, "needStep": 2 },
+      "perk": { "type": "repair", "value": 0.15, "at": 40 },
+      "image": "ss_npc_ge.png"
+    },
+    {
+      "id": "npc_lei_zhilan",
+      "name": "雷芷嵐",
+      "sector": "bastion",
+      "facility": "bas_03_naval",
+      "gender": "female",
+      "age": 28,
+      "role": "邊防艦隊中尉，巡邏隊長",
+      "look": "短髮，制服扣到最上面一顆，左眉一道細疤；喝酒只點最便宜的。",
+      "personality": "嚴格、照規矩，看起來對私掠者毫無好感。",
+      "voice": "命令句、軍事用語；放鬆時冒出邊陲農村口音。",
+      "core": {
+        "mask": "嚴格、照規矩、看起來對私掠者毫無好感",
+        "want": "抓出艦隊裡把巡邏路線賣給赤帆團的內鬼",
+        "wound": "她的隊伍曾因情報外洩被伏擊，只有她活著回來；長官把責任推到她身上",
+        "leverage": "私掠者在艦隊體制外，能去她去不了的地方",
+        "hook": "玩家第一次停靠軍港，她親自登船檢查，查完卻低聲說：「你上週在錨點星區打下的那艘劫掠艇，船號給我。」"
+      },
+      "likes": ["準確的情報", "遵守承諾的人", "家鄉的穀物酒"],
+      "dislikes": ["赤帆團", "說謊", "走私違禁品的人（走私被她查到時好感 −10）"],
+      "giftGoods": ["spirits", "grain"],
+      "stages": ["陌生", "熟客", "信任", "親密", "伴侶"],
+      "chain": [
+        { "step": 1, "needAffection": 20, "template": "m_npc_lei_1", "talk": false, "seed": "擊落一艘指定的赤帆偵察艇，帶回它的航行紀錄。" },
+        { "step": 2, "needAffection": 40, "template": "m_npc_lei_2", "talk": true, "seed": "照一條被洩漏的巡邏路線飛一趟當誘餌，看是誰來伏擊。" },
+        { "step": 3, "needAffection": 70, "template": "m_npc_lei_3", "talk": false, "seed": "截下內鬼和赤帆交易的那艘船，在對方跳走之前。" }
+      ],
+      "intimacy": { "needAffection": 60, "needStep": 2 },
+      "perk": { "type": "gear_discount", "value": 0.1, "at": 40 },
+      "image": "ss_npc_lei.png"
+    },
+    {
+      "id": "npc_yi_man",
+      "name": "伊蔓",
+      "sector": "mist",
+      "facility": "mis_03_sink",
+      "gender": "female",
+      "age": 30,
+      "role": "黑市銷贓中間人",
+      "look": "紅褐色捲髮，耳骨一排金屬環，愛穿男裝外套；煙斗裡燒的是合法香料。",
+      "personality": "嘴甜愛開玩笑，什麼都能賣也能買，從不問貨從哪來。",
+      "voice": "輕快，愛給人暱稱，話裡常帶價碼。",
+      "core": {
+        "mask": "嘴甜、愛開玩笑、什麼都能賣也什麼都能買；從不問貨從哪來",
+        "want": "有足夠的錢與人脈，讓她的妹妹離開赤帆團某位船長身邊",
+        "wound": "她自己就是從那個船長那裡逃出來的，到現在還不敢直接面對他",
+        "leverage": "玩家需要銷贓管道；她需要一艘不屬於任何勢力的船",
+        "hook": "玩家第一次來，她直接報出貨艙每樣東西在這裡的收購價，還多報了一樣玩家自己都不知道藏在船上的東西"
+      },
+      "likes": ["膽大但有分寸的人", "好故事", "香料"],
+      "dislikes": ["欺負弱者的人", "聯盟的稽查員"],
+      "giftGoods": ["spice", "antiques"],
+      "stages": ["陌生", "熟客", "信任", "親密", "伴侶"],
+      "chain": [
+        { "step": 1, "needAffection": 20, "template": "m_npc_yi_1", "talk": false, "seed": "把一箱貨送進鐵壁軍港，掃描機率很高。" },
+        { "step": 2, "needAffection": 40, "template": "m_npc_yi_2", "talk": true, "seed": "打聽妹妹跟著哪艘船、在哪一帶活動，回來告訴她。" },
+        { "step": 3, "needAffection": 70, "template": "m_npc_yi_3", "talk": false, "seed": "接應她妹妹逃出來，那位船長會帶人追。" }
+      ],
+      "intimacy": { "needAffection": 60, "needStep": 2 },
+      "perk": { "type": "fence", "value": 0.15, "at": 40 },
+      "image": "ss_npc_yi.png"
+    },
+    {
+      "id": "npc_lu_shuang",
+      "name": "陸霜",
+      "sector": "mist",
+      "facility": "mis_02_tavern",
+      "gender": "female",
+      "age": 36,
+      "role": "退役赤帆船長，現在開酒館",
+      "look": "銀灰短髮，臉頰一道舊燒傷，右手少兩根手指，披著磨白的舊赤帆船長外套。",
+      "personality": "懶散、愛講古，看誰都像後輩；一句話能壓下酒館打架。",
+      "voice": "慢條斯理、愛繞圈子講故事，關鍵時一句很重。",
+      "core": {
+        "mask": "懶散、愛講古、看誰都像在看後輩；酒館打架她一句話就能壓下，赤帆的年輕人都叫她「霜姐」",
+        "want": "讓赤帆團回到以前「只劫商會、不碰平民」的規矩",
+        "wound": "當年就是她自己破了規矩，下令劫了一艘難民船，從此退役",
+        "leverage": "她看得出玩家有當船長的料，想要一個能把話帶進赤帆議會的人",
+        "hook": "玩家進門，她看了船一眼就說：「驢級？我第一艘也是。左舷燃料管會漏，對吧。」"
+      },
+      "likes": ["守規矩的海盜", "好酒", "聽人講第一次出航的故事"],
+      "dislikes": ["殺平民", "背信", "邊防艦隊的高層"],
+      "giftGoods": ["spirits"],
+      "stages": ["陌生", "熟客", "信任", "親密", "伴侶"],
+      "chain": [
+        { "step": 1, "needAffection": 20, "template": "m_npc_lu_1", "talk": false, "seed": "護送一艘往巨骸的難民船，赤帆的年輕人想劫它。" },
+        { "step": 2, "needAffection": 40, "template": "m_npc_lu_2", "talk": true, "seed": "解決專劫平民的赤帆船長，回來決定要不要公開真相。" },
+        { "step": 3, "needAffection": 70, "template": "m_npc_lu_3", "talk": false, "seed": "把她的舊規矩帶進赤帆議會，路上有人想讓信消失。" }
+      ],
+      "intimacy": { "needAffection": 60, "needStep": 2 },
+      "perk": { "type": "intel", "value": 1, "at": 40, "missionTypes": ["raid", "bounty"] },
+      "image": "ss_npc_lu.png"
+    },
+    {
+      "id": "npc_qiao_wei",
+      "name": "喬薇",
+      "sector": "wreck",
+      "facility": "wrk_03_outpost",
+      "gender": "female",
+      "age": 27,
+      "role": "遺物回收技師，左臂是舊環義肢",
+      "look": "淺色短髮，護目鏡推在額頭，左臂是泛藍光的舊環義肢，指尖會敲出節奏。",
+      "personality": "好奇直接，對遺物比對人熱情，問到別人尷尬也不自覺。",
+      "voice": "快、跳躍、一堆技術詞；被反問會突然安靜。",
+      "core": {
+        "mask": "好奇、直接、對遺物比對人熱情；問問題問到別人尷尬也不自覺",
+        "want": "弄懂自己的義肢為什麼會對鏽蜂無人機群起反應",
+        "wound": "義肢是遺環會從她小時候撿到的殘骸裡「配給」她的，她懷疑自己只是教團的實驗品",
+        "leverage": "玩家能帶她去教團不准她去的殘骸深處",
+        "hook": "玩家第一次停靠前哨站，她的義肢突然亮起來，她盯著貨艙問：「你們打過鏽蜂？剛剛？」"
+      },
+      "likes": ["遺物碎片", "說話直接的人", "沒見過的東西"],
+      "dislikes": ["被當成工具", "遺環會的長老"],
+      "giftGoods": ["relic_shard", "sensors"],
+      "stages": ["陌生", "熟客", "信任", "親密", "伴侶"],
+      "chain": [
+        { "step": 1, "needAffection": 20, "template": "m_npc_qiao_1", "talk": false, "seed": "從鏽蜂巢外圍回收一塊特定的殘骸。" },
+        { "step": 2, "needAffection": 40, "template": "m_npc_qiao_2", "talk": true, "seed": "帶她潛進斷裂的環門，看義肢和遺物共鳴後發生什麼。" },
+        { "step": 3, "needAffection": 70, "template": "m_npc_qiao_3", "talk": false, "seed": "她決定離開遺環會，教團派船來「回收」她。" }
+      ],
+      "intimacy": { "needAffection": 60, "needStep": 2 },
+      "perk": { "type": "appraise", "value": 0.15, "at": 40 },
+      "image": "ss_npc_qiao.png"
+    }
+  ]
+}

@@ -1,0 +1,921 @@
+{
+ "_note": "T15 定案（2026-11-21，Opus）。shipyard＝最低需要幾級船塢才買得到這種船；null＝敵艦專用。",
+ "hulls": [
+  {
+   "id": "donkey",
+   "name": "驢",
+   "class": "輕貨船",
+   "price": 18000,
+   "hull": 120,
+   "armor": 40,
+   "energy": 6,
+   "agility": 3,
+   "speed": 3,
+   "cargo": 30,
+   "jumpCharge": 4,
+   "shipyard": 1,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 2,
+    "special": 1
+   },
+   "image": "ss_ship_donkey.png",
+   "desc": "慢、能載、武裝差的輕貨船，新手船長的起點。"
+  },
+  {
+   "id": "falcon",
+   "name": "隼",
+   "class": "輕型攔截機",
+   "price": 38000,
+   "hull": 80,
+   "armor": 30,
+   "energy": 7,
+   "agility": 7,
+   "speed": 7,
+   "cargo": 8,
+   "jumpCharge": 2,
+   "shipyard": 1,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     }
+    ],
+    "missile": 1,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 0,
+    "special": 1
+   },
+   "image": "ss_ship_falcon.png",
+   "desc": "快、火力集中、貨艙很小的攔截機，打得贏也逃得掉。"
+  },
+  {
+   "id": "albatross",
+   "name": "信天翁",
+   "class": "中型貨船",
+   "price": 55000,
+   "hull": 170,
+   "armor": 80,
+   "energy": 6,
+   "agility": 2,
+   "speed": 3,
+   "cargo": 70,
+   "jumpCharge": 3,
+   "shipyard": 2,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 3,
+    "special": 2
+   },
+   "image": "ss_ship_albatross.png",
+   "desc": "大貨艙、厚裝甲、很難轉彎的中型貨船；遇到硬仗就跑。"
+  },
+  {
+   "id": "badger",
+   "name": "獾",
+   "class": "武裝商船",
+   "price": 90000,
+   "hull": 140,
+   "armor": 50,
+   "energy": 7,
+   "agility": 4,
+   "speed": 5,
+   "cargo": 35,
+   "jumpCharge": 3,
+   "shipyard": 2,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 1,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 1,
+    "special": 2
+   },
+   "image": "ss_ship_badger.png",
+   "desc": "貨艙、火力、機動都過得去的武裝商船，什麼路線都能跑。"
+  },
+  {
+   "id": "whaleshark",
+   "name": "鯨鯊",
+   "class": "重型戰鬥艦",
+   "price": 180000,
+   "hull": 240,
+   "armor": 100,
+   "energy": 10,
+   "agility": 4,
+   "speed": 4,
+   "cargo": 20,
+   "jumpCharge": 3,
+   "shipyard": 3,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 2,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 0,
+    "special": 2
+   },
+   "image": "ss_ship_whaleshark.png",
+   "desc": "火力與護盾最強的重型戰鬥艦，慢，貨艙小，貴。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "raider",
+   "name": "劫掠艇",
+   "hull": 55,
+   "armor": 20,
+   "energy": 5,
+   "agility": 6,
+   "speed": 6,
+   "cargo": 4,
+   "jumpCharge": 2,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_raider.png",
+   "desc": "赤帆團的輕型劫掠艇，只有敵人在開。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "drone",
+   "name": "鏽蜂",
+   "hull": 20,
+   "armor": 4,
+   "energy": 4,
+   "agility": 8,
+   "speed": 7,
+   "cargo": 0,
+   "jumpCharge": 9,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 0,
+    "jump": 0,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_drone.png",
+   "desc": "舊環門吐出的自律無人機，小、快、成群。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "hauler",
+   "name": "商會貨船",
+   "hull": 90,
+   "armor": 25,
+   "energy": 4,
+   "agility": 2,
+   "speed": 2,
+   "cargo": 60,
+   "jumpCharge": 5,
+   "slots": {
+    "gun": [
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_hauler.png",
+   "desc": "商會的大型貨船，笨重，只有一座砲塔。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "raider_heavy",
+   "name": "重裝劫掠艇",
+   "hull": 90,
+   "armor": 35,
+   "energy": 6,
+   "agility": 5,
+   "speed": 6,
+   "cargo": 6,
+   "jumpCharge": 2,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     }
+    ],
+    "missile": 1,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_raider_heavy.png",
+   "desc": "赤帆團加厚裝甲的重裝艇，帶飛彈。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "cutter",
+   "name": "巡邏快艇",
+   "hull": 80,
+   "armor": 30,
+   "energy": 6,
+   "agility": 5,
+   "speed": 6,
+   "cargo": 4,
+   "jumpCharge": 2,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_cutter.png",
+   "desc": "邊防艦隊的巡邏快艇。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "drone_big",
+   "name": "鏽蜂獵殺者",
+   "hull": 60,
+   "armor": 20,
+   "energy": 5,
+   "agility": 5,
+   "speed": 5,
+   "cargo": 0,
+   "jumpCharge": 9,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 0,
+    "jump": 0,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_drone_big.png",
+   "desc": "鏽蜂群裡的大型個體，雙鑽針，專挑落單的船下手。"
+  }
+ ],
+ "equipment": [
+  {
+   "id": "laser_mk1",
+   "name": "雷射砲I",
+   "type": "gun",
+   "tier": 1,
+   "price": 2500,
+   "stats": {
+    "dmg": 18,
+    "bands": [
+     "mid",
+     "near",
+     "close"
+    ],
+    "acc": 0,
+    "energy": 1,
+    "vsShield": 1.2,
+    "vsArmor": 0.8
+   },
+   "lock": null,
+   "desc": "中近距離都能用的前方雷射，剋護盾。"
+  },
+  {
+   "id": "laser_mk2",
+   "name": "雷射砲II",
+   "type": "gun",
+   "tier": 2,
+   "price": 7000,
+   "stats": {
+    "dmg": 24,
+    "bands": [
+     "mid",
+     "near",
+     "close"
+    ],
+    "acc": 5,
+    "energy": 1,
+    "vsShield": 1.2,
+    "vsArmor": 0.8
+   },
+   "lock": null,
+   "desc": "加強版雷射，比較準。"
+  },
+  {
+   "id": "laser_mk3",
+   "name": "雷射砲III",
+   "type": "gun",
+   "tier": 3,
+   "price": 16000,
+   "stats": {
+    "dmg": 30,
+    "bands": [
+     "mid",
+     "near",
+     "close"
+    ],
+    "acc": 5,
+    "energy": 1,
+    "vsShield": 1.2,
+    "vsArmor": 0.8
+   },
+   "lock": null,
+   "desc": "頂級民用雷射。"
+  },
+  {
+   "id": "mass_mk1",
+   "name": "質量砲I",
+   "type": "gun",
+   "tier": 1,
+   "price": 3000,
+   "stats": {
+    "dmg": 24,
+    "bands": [
+     "near",
+     "close"
+    ],
+    "acc": -5,
+    "energy": 2,
+    "vsShield": 0.8,
+    "vsArmor": 1.3
+   },
+   "lock": null,
+   "desc": "只打得到近距離，剋裝甲，吃能量。"
+  },
+  {
+   "id": "mass_mk2",
+   "name": "質量砲II",
+   "type": "gun",
+   "tier": 2,
+   "price": 8000,
+   "stats": {
+    "dmg": 32,
+    "bands": [
+     "near",
+     "close"
+    ],
+    "acc": -5,
+    "energy": 2,
+    "vsShield": 0.8,
+    "vsArmor": 1.3
+   },
+   "lock": null,
+   "desc": "加強版質量砲。"
+  },
+  {
+   "id": "mass_mk3",
+   "name": "質量砲III",
+   "type": "gun",
+   "tier": 3,
+   "price": 17000,
+   "stats": {
+    "dmg": 40,
+    "bands": [
+     "near",
+     "close"
+    ],
+    "acc": 0,
+    "energy": 2,
+    "vsShield": 0.8,
+    "vsArmor": 1.3
+   },
+   "lock": null,
+   "desc": "頂級質量砲，準度不再打折。"
+  },
+  {
+   "id": "turret_mk1",
+   "name": "砲塔雷射I",
+   "type": "gun",
+   "tier": 2,
+   "price": 5200,
+   "stats": {
+    "dmg": 18,
+    "bands": [
+     "mid",
+     "near",
+     "close"
+    ],
+    "acc": 0,
+    "energy": 1,
+    "vsShield": 1.2,
+    "vsArmor": 0.8
+   },
+   "lock": null,
+   "desc": "任何方位都能射，傷害打 8 折。"
+  },
+  {
+   "id": "turret_mk2",
+   "name": "砲塔雷射II",
+   "type": "gun",
+   "tier": 3,
+   "price": 14000,
+   "stats": {
+    "dmg": 26,
+    "bands": [
+     "mid",
+     "near",
+     "close"
+    ],
+    "acc": 5,
+    "energy": 1,
+    "vsShield": 1.2,
+    "vsArmor": 0.8
+   },
+   "lock": null,
+   "desc": "加強版砲塔。"
+  },
+  {
+   "id": "rail_gun",
+   "name": "磁軌砲",
+   "type": "gun",
+   "tier": 4,
+   "price": 32000,
+   "stats": {
+    "dmg": 42,
+    "bands": [
+     "far",
+     "mid"
+    ],
+    "acc": 10,
+    "energy": 3,
+    "vsShield": 1,
+    "vsArmor": 1.2
+   },
+   "lock": {
+    "faction": "fleet",
+    "tier": "ally"
+   },
+   "desc": "遠中距離的艦隊制式磁軌砲，吃 3 點能量；艦隊盟友才買得到。"
+  },
+  {
+   "id": "plasma_gun",
+   "name": "電漿砲",
+   "type": "gun",
+   "tier": 4,
+   "price": 30000,
+   "stats": {
+    "dmg": 36,
+    "bands": [
+     "near",
+     "close"
+    ],
+    "acc": 0,
+    "energy": 2,
+    "vsShield": 1.4,
+    "vsArmor": 1
+   },
+   "lock": {
+    "faction": "redsail",
+    "tier": "friendly"
+   },
+   "desc": "近距離的黑市電漿砲，對護盾特別狠；赤帆友善才買得到。"
+  },
+  {
+   "id": "missile_dart",
+   "name": "鏢式飛彈",
+   "type": "missile",
+   "tier": 1,
+   "price": 4000,
+   "stats": {
+    "dmg": 55,
+    "ammo": 4,
+    "bands": [
+     "far",
+     "mid"
+    ],
+    "lockTurns": 2,
+    "ammoPrice": 300
+   },
+   "lock": null,
+   "desc": "遠中距離的追蹤飛彈，要鎖定 2 回合。"
+  },
+  {
+   "id": "missile_swarm",
+   "name": "蜂群飛彈",
+   "type": "missile",
+   "tier": 2,
+   "price": 9000,
+   "stats": {
+    "dmg": 32,
+    "ammo": 6,
+    "bands": [
+     "mid",
+     "near"
+    ],
+    "lockTurns": 1,
+    "ammoPrice": 250
+   },
+   "lock": null,
+   "desc": "中近距離的小型飛彈，鎖定 1 回合，6 發。"
+  },
+  {
+   "id": "missile_hunter",
+   "name": "獵手飛彈",
+   "type": "missile",
+   "tier": 3,
+   "price": 12000,
+   "stats": {
+    "dmg": 85,
+    "ammo": 4,
+    "bands": [
+     "far",
+     "mid"
+    ],
+    "lockTurns": 2,
+    "ammoPrice": 600
+   },
+   "lock": null,
+   "desc": "遠中距離的重型飛彈，威力大，彈藥貴。"
+  },
+  {
+   "id": "shield_mk1",
+   "name": "護盾I",
+   "type": "shield",
+   "tier": 1,
+   "price": 3000,
+   "stats": {
+    "front": 30,
+    "rear": 20,
+    "regen": 4
+   },
+   "lock": null,
+   "desc": "標準護盾產生器。"
+  },
+  {
+   "id": "shield_mk2",
+   "name": "護盾II",
+   "type": "shield",
+   "tier": 2,
+   "price": 8000,
+   "stats": {
+    "front": 45,
+    "rear": 30,
+    "regen": 6
+   },
+   "lock": null,
+   "desc": "加強版護盾。"
+  },
+  {
+   "id": "shield_mk3",
+   "name": "護盾III",
+   "type": "shield",
+   "tier": 3,
+   "price": 18000,
+   "stats": {
+    "front": 65,
+    "rear": 45,
+    "regen": 8
+   },
+   "lock": null,
+   "desc": "頂級民用護盾。"
+  },
+  {
+   "id": "shield_relic",
+   "name": "環紋護盾",
+   "type": "shield",
+   "tier": 5,
+   "price": 40000,
+   "stats": {
+    "front": 80,
+    "rear": 80,
+    "regen": 10
+   },
+   "lock": {
+    "faction": "relic",
+    "tier": "ally"
+   },
+   "desc": "遺環會修復的舊環時代護盾，前後一樣厚；遺環會盟友才拿得到。"
+  },
+  {
+   "id": "engine_mk1",
+   "name": "引擎I",
+   "type": "engine",
+   "tier": 1,
+   "price": 2000,
+   "stats": {
+    "agility": 1,
+    "speed": 1
+   },
+   "lock": null,
+   "desc": "標準推進器，敏捷與速度各 +1。"
+  },
+  {
+   "id": "engine_mk2",
+   "name": "引擎II",
+   "type": "engine",
+   "tier": 2,
+   "price": 6500,
+   "stats": {
+    "agility": 2,
+    "speed": 2
+   },
+   "lock": null,
+   "desc": "敏捷與速度各 +2。"
+  },
+  {
+   "id": "engine_mk3",
+   "name": "引擎III",
+   "type": "engine",
+   "tier": 3,
+   "price": 15000,
+   "stats": {
+    "agility": 3,
+    "speed": 2
+   },
+   "lock": null,
+   "desc": "敏捷 +3、速度 +2。"
+  },
+  {
+   "id": "jump_mk1",
+   "name": "短躍引擎I",
+   "type": "jumpdrive",
+   "tier": 1,
+   "price": 2000,
+   "stats": {
+    "chargeMod": 0,
+    "timeMult": 1
+   },
+   "lock": null,
+   "desc": "標準短躍引擎。"
+  },
+  {
+   "id": "jump_mk2",
+   "name": "短躍引擎II",
+   "type": "jumpdrive",
+   "tier": 2,
+   "price": 6000,
+   "stats": {
+    "chargeMod": -1,
+    "timeMult": 0.85
+   },
+   "lock": null,
+   "desc": "脫離少 1 回合，跳躍耗時 −15%。"
+  },
+  {
+   "id": "jump_mk3",
+   "name": "短躍引擎III",
+   "type": "jumpdrive",
+   "tier": 3,
+   "price": 14000,
+   "stats": {
+    "chargeMod": -1,
+    "timeMult": 0.7
+   },
+   "lock": null,
+   "desc": "脫離少 1 回合，跳躍耗時 −30%。"
+  },
+  {
+   "id": "cargo_pod",
+   "name": "貨艙擴充I",
+   "type": "cargo",
+   "tier": 1,
+   "price": 2500,
+   "stats": {
+    "cap": 8
+   },
+   "lock": null,
+   "desc": "貨艙 +8 格。"
+  },
+  {
+   "id": "cargo_pod2",
+   "name": "貨艙擴充II",
+   "type": "cargo",
+   "tier": 2,
+   "price": 6000,
+   "stats": {
+    "cap": 15
+   },
+   "lock": null,
+   "desc": "貨艙 +15 格。"
+  },
+  {
+   "id": "jammer_mk1",
+   "name": "訊號干擾器I",
+   "type": "special",
+   "tier": 2,
+   "price": 7000,
+   "stats": {
+    "effect": "scan_jam",
+    "value": 15
+   },
+   "lock": null,
+   "desc": "被巡邏掃到的機率 −15%。"
+  },
+  {
+   "id": "jammer_mk2",
+   "name": "訊號干擾器II",
+   "type": "special",
+   "tier": 3,
+   "price": 16000,
+   "stats": {
+    "effect": "scan_jam",
+    "value": 30
+   },
+   "lock": null,
+   "desc": "被巡邏掃到的機率 −30%。"
+  },
+  {
+   "id": "hidden_hold",
+   "name": "藏貨夾層",
+   "type": "special",
+   "tier": 2,
+   "price": 6000,
+   "stats": {
+    "effect": "hidden_hold",
+    "value": 6
+   },
+   "lock": {
+    "faction": "redsail",
+    "tier": "neutral"
+   },
+   "desc": "夾層藏 6 格貨，藏在裡面的不會被掃到；赤帆不敵視才買得到。"
+  },
+  {
+   "id": "relic_scanner",
+   "name": "遺物掃描儀",
+   "type": "special",
+   "tier": 2,
+   "price": 5000,
+   "stats": {
+    "effect": "relic_scanner",
+    "value": 10
+   },
+   "lock": null,
+   "desc": "賣遺物碎片多 10%。"
+  },
+  {
+   "id": "armor_plate",
+   "name": "附加裝甲板",
+   "type": "special",
+   "tier": 2,
+   "price": 8000,
+   "stats": {
+    "effect": "armor_plate",
+    "value": 30
+   },
+   "lock": null,
+   "desc": "裝甲上限 +30。"
+  },
+  {
+   "lock": null,
+   "id": "drone_spit",
+   "name": "鏽蝕鑽針",
+   "type": "gun",
+   "tier": 1,
+   "price": 0,
+   "stats": {
+    "dmg": 10,
+    "bands": [
+     "near",
+     "close"
+    ],
+    "acc": 5,
+    "energy": 1,
+    "vsShield": 0.9,
+    "vsArmor": 1.2
+   },
+   "desc": "敵艦專用，玩家買不到。"
+  },
+  {
+   "lock": null,
+   "id": "shield_light",
+   "name": "輕護盾",
+   "type": "shield",
+   "tier": 1,
+   "price": 1800,
+   "stats": {
+    "front": 18,
+    "rear": 10,
+    "regen": 3
+   },
+   "desc": "便宜的小型護盾。"
+  },
+  {
+   "lock": null,
+   "id": "shield_drone",
+   "name": "鏽蜂殼場",
+   "type": "shield",
+   "tier": 1,
+   "price": 0,
+   "stats": {
+    "front": 6,
+    "rear": 3,
+    "regen": 1
+   },
+   "desc": "敵艦專用，玩家買不到。"
+  },
+  {
+   "lock": null,
+   "id": "shield_drone_heavy",
+   "name": "鏽蜂重殼場",
+   "type": "shield",
+   "tier": 1,
+   "price": 0,
+   "stats": {
+    "front": 15,
+    "rear": 10,
+    "regen": 2
+   },
+   "desc": "敵艦專用，玩家買不到。"
+  }
+ ]
+}
