@@ -982,8 +982,19 @@
         f.src = MUSIC_URL; f.setAttribute('allow', 'autoplay; encrypted-media'); f.setAttribute('title', '背景音樂');
         box.appendChild(f);
       }
-      var on = box.className !== 'show'; box.className = on ? 'show' : ''; b.className = 'on';
+      setShow(box.className !== 'show'); b.className = 'on';
     };
+    // 播放器不要一直卡在畫面中間：展開 8 秒後自動收起（音樂照放）；點播放器以外的地方也會收起。
+    // 點進播放器（焦點移到 iframe，window 會 blur）就取消自動收起，讓玩家操作。
+    var tm = null;
+    function setShow(on) {
+      box.className = on ? 'show' : ''; clearTimeout(tm);
+      if (on) tm = setTimeout(function () { setShow(false); }, 8000);
+    }
+    window.addEventListener('blur', function () { if (box.className === 'show') clearTimeout(tm); });
+    document.addEventListener('click', function (e) {
+      if (box.className === 'show' && e.target !== b && !box.contains(e.target)) setShow(false);
+    }, true);
   })();
   boot();
 })();
