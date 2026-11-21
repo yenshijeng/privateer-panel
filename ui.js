@@ -204,7 +204,7 @@
     sects.forEach(function (k) { // 各星區框的淡背景（失敗就沒有）
       var b0 = bb[k], cp = document.createElementNS(NS, 'clipPath'); cp.setAttribute('id', 'clip_' + k); defs.appendChild(cp);
       se(cp, 'rect', { x: b0.x0, y: b0.y0, width: b0.x1 - b0.x0, height: b0.y1 - b0.y0, rx: 30 });
-      var im = document.createElementNS(NS, 'image'); [['href', imgUrl('sector_' + k)], ['x', b0.x0], ['y', b0.y0], ['width', b0.x1 - b0.x0], ['height', b0.y1 - b0.y0], ['preserveAspectRatio', 'xMidYMid slice'], ['opacity', 0.5], ['style', 'filter:brightness(1.6)'], ['clip-path', 'url(#clip_' + k + ')'], ['data-sectorpic', k]].forEach(function (a) { im.setAttribute(a[0], a[1]); });
+      var im = document.createElementNS(NS, 'image'); [['href', imgUrl('sector_' + k)], ['x', b0.x0], ['y', b0.y0], ['width', b0.x1 - b0.x0], ['height', b0.y1 - b0.y0], ['preserveAspectRatio', 'xMidYMid slice'], ['opacity', k === 'anchor' ? 0.65 : 0.5], ['style', k === 'anchor' ? 'filter:brightness(2.4)' : 'filter:brightness(1.6)'], ['clip-path', 'url(#clip_' + k + ')'], ['data-sectorpic', k]].forEach(function (a) { im.setAttribute(a[0], a[1]); });
       im.addEventListener('error', function () { im.style.display = 'none'; }); svg.appendChild(im);
     });
     sects.forEach(function (k) {
