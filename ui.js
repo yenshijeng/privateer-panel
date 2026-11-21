@@ -973,7 +973,7 @@
 
   // 背景音樂（Suno 嵌入）：第一次按 🎵 才載入播放器（瀏覽器要求使用者先點過才能自動播放）；
   // 之後按 🎵 只收合／展開播放器，iframe 不移除，所以切換分頁、收起艦橋都不會中斷音樂。
-  var MUSIC_URL = 'https://suno.com/embed/hgQiaLi4dij0cbjO?autoplay=1';
+  var MUSIC_URL = 'https://suno.com/embed/75342d1f-182d-4c6b-8c91-7109636b9061?autoplay=1';
   (function () {
     var b = $('mbtn'), box = $('music'); if (!b || !box) return;
     b.onclick = function () {
