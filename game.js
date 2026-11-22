@@ -1106,6 +1106,15 @@
     if (save.battle && save.battle.enc && save.battle.enc.elite) L.push('遭遇：精英敵艦〔' + eliteNames(save.battle.enc) + '〕（精英），對方不談條件，直接開打');
     if (save.parley) L.push('交涉中：赤帆海盜〔' + parleyEnemyText(save.parley.enc) + '〕要求〔' + demandText(save.parley.demand) + '〕');
     if (pr.length) L.push('在場：' + pr.map(function (x) { return x.name + '（' + x.role + '）好感 ' + x.stage + '｜親密互動：' + (x.open ? '已開放' : '未開放') + (x.talk ? '｜委託待談' : ''); }).join('；'));
+    var mkLine = null;
+    if (!opts.core && save.loc.docked && fac && fac.services && fac.services.indexOf('market') >= 0) {
+      try {
+        var bd = board(save, save.loc.facility), pd = [], dm = [];
+        bd.forEach(function (g) { if (g.status === 'produce') pd.push(g.name); else if (g.status === 'demand') dm.push(g.name); });
+        mkLine = '本站市場：產出 ' + (pd.length ? pd.join('、') : '無') + '｜需求 ' + (dm.length ? dm.join('、') : '無') + '（其餘一般價）';
+        L.push(mkLine);
+      } catch (e) { mkLine = null; }
+    }
     if (!opts.core) {
       L.push('最近發生：');
       if (recent.length) L = L.concat(recent); else L.push('・（無）');
@@ -1115,6 +1124,7 @@
     L.push('・數字照抄航行資料；任何人（含 NPC）都不能替玩家買賣、移動、改裝；不寫船飛到別的系統');
     if (save.parley) L.push('・對方的條件是「' + demandText(save.parley.demand) + '」；玩家的選擇只能寫成 parley 事件，不要自己決定結果');
     if (!save.loc.docked) L.push('・現在在太空中，沒有酒吧與市場；只描寫艦橋、通訊與窗外');
+    if (mkLine) L.push('・NPC 提到哪種貨缺、哪種貨好賣時，照「本站市場」寫，不要自己編；成交價只看艦橋市場');
     pr.forEach(function (x) {
       if (x.open) L.push('・' + x.name + '的親密互動已開放，須雙方合意；玩家沒有表示意願時不主動推進');
       else L.push('・' + x.name + '的親密互動尚未開放：可以曖昧、可以靠近，但對方會在越線前停下或轉移話題');

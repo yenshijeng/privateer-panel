@@ -198,7 +198,7 @@
       S = G.newGame({ name: name.value.trim(), shipName: shipName.value, gender: gender.value, look: look.value, origin: sel }, (Date.now() ^ (Math.random() * 4294967296)) >>> 0);
       S.convId = lastConvId || '';
       persist(); $('view').style.top = '';
-      var f0 = G.dockedFac(S); if (f0) { S.flags.dockT = S.flags.dockT || {}; S.flags.dockT[f0.id] = S.t; narrate('【停靠】我把船停進' + f0.name + '。'); }
+      var f0 = G.dockedFac(S); if (f0) { S.flags.dockT = S.flags.dockT || {}; S.flags.dockT[f0.id] = S.t; narrate('【停靠】港務登記剛辦好（船長' + S.player.name + '，船名「' + S.ship.name + '」，不用再問）。我把船停進' + f0.name + '。'); }
       setTab('story'); render();
     } })])].forEach(function (x) { card.appendChild(x); });
     v.appendChild(card);
@@ -445,7 +445,9 @@
     else if (d.t === 'story') {
       var newId = !lastStory || lastStory.id !== d.id;
       lastStory = { id: d.id, blocks: d.blocks || [] }; busy = !!d.busy; lastStoryAt = Date.now();
-      if (S && newId) { S.convTurns = (S.convTurns || 0) + 1; persist(); }
+      // 只在「AI 訊息則數」變了才算一輪（串流中 id 會一直變，11/22 實測 9 輪就跳出長對話提示）
+      var nAi = String(d.id || '').split(':')[2] || '';
+      if (S && newId && nAi && nAi !== S.convLastN) { if (S.convLastN) S.convTurns = (S.convTurns || 0) + 1; S.convLastN = nAi; persist(); }
       var all = lastStory.blocks.map(function (b) { return b.t || ''; }).join('\n'), i = all.indexOf(XS), j = all.indexOf(XE);
       if (S && i >= 0 && j > i) { S.storySummary = all.slice(i + XS.length, j).trim(); persist(); }
       if (tab !== 'story') storyNew = true;
@@ -470,7 +472,7 @@
     if (d.u > 0) { S.convId = d.id; persist(); return; }
     var box = h('div', { id: 'resumeModal' }, [h('h3', { text: '這是新的對話' }), h('p', { class: 'sm', text: '艦橋找到一份舊進度。要接著玩，還是重新開始？' })]);
     box.appendChild(h('button', { class: 'btn', id: 'resumeBtn', style: 'width:100%;margin:6px 0', text: '接續目前進度', onclick: function () {
-      S.convId = d.id; S.convTurns = 0; S.turnHinted = false; persist(); closeModal();
+      S.convId = d.id; S.convTurns = 0; S.convLastN = ''; S.turnHinted = false; persist(); closeModal();
       narrate('【接續進度】請依下面的資料接著演。\n' + (S.storySummary || '（尚無劇情摘要）'));
       render();
     } }));
