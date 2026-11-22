@@ -191,7 +191,7 @@
       });
     }
     drawOrigins();
-    [cover, h('h3', { text: '星域私掠者' }), h('div', { class: 'dim sm', text: '你分到一艘舊驢號貨船、3,000 信用點，和一筆 20,000 的船貸。先跑貨還債，再看要不要走偏門。' }),
+    [cover, h('h3', { text: '銀河私掠者' }), h('div', { class: 'dim sm', text: '你分到一艘舊驢號貨船、3,000 信用點，和一筆 20,000 的船貸。先跑貨還債，再看要不要走偏門。' }),
     h('label', { text: '名字' }), name, h('label', { text: '船名' }), shipName, h('label', { text: '性別' }), gender, h('label', { text: '外貌' }), look,
     h('label', { text: '出身（決定小幅加成與初始人脈）' }), list,
     h('div', { style: 'margin-top:12px' }, [h('button', { class: 'btn', text: '出發', onclick: function () {
