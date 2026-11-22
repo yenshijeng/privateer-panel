@@ -471,9 +471,12 @@
     else if (d.t === 'fillres') { if (d.s) toast(d.s); }
     else if (d.t === 'conv') onConv(d);
   }
+  var wantedFor = null;
   function onConv(d) {
     if (!d.id) return;
     lastConvId = d.id;
+    // 11/22：載入器預設縮成右下角圓鈕，新對話（還沒有玩家訊息）一進來就請它展開艦橋，每個對話只請一次
+    if (d.u === 0 && wantedFor !== d.id) { wantedFor = d.id; try { Br.want(); } catch (e) { } }
     if (!S) return;
     if (!S.convId) { S.convId = d.id; persist(); return; }
     if (S.convId === d.id) return;
