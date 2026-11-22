@@ -30,7 +30,7 @@
   var XP_CUM = [0, 100, 250, 450, 700]; // 升到 2,3,4,5 級的累計經驗；每升一級，該項能力 +1
   var LOG_MAX = 200;
   // 船貸規則
-  var LOAN = { start: 20000, rate: 0.02, installment: 2500, period: 168, fee: 500, repRepay: 5, repMiss: -5, destroyAdd: 8000 };
+  var LOAN = { start: 20000, rate: 0.02, installment: 2500, period: 168, fee: 500, repRepay: 5, repMiss: -5, destroyAdd: 8000, deathCap: 36000 };
   var INS = { rate: 0.05, hours: 168 };
   var SCAN_BASE = 0.5, FINE_RATE = 0.5, SEIZE_REP = -5;
 
@@ -451,7 +451,30 @@
       likely = Object.keys(seen).map(function (k) { return { type: k, name: ENC_NAME[k] || k, p: seen[k] }; }).sort(function (a, b) { return b.p - a.p; });
     }
     var flight = flightHours(save, l.dist);
-    return { to: toId, name: s ? s.name : '（尚未開放）', dist: l.dist, flight: flight, hours: flight + 1, danger: s ? s.danger : null, chance: tb ? tb.chance : 0, likely: likely, open: !!s };
+    var ro = routeOdds(save, toId);
+    return { odds: ro, to: toId, name: s ? s.name : '（尚未開放）', dist: l.dist, flight: flight, hours: flight + 1, danger: s ? s.danger : null, chance: tb ? tb.chance : 0, likely: likely, open: !!s };
+  }
+  // 11/22：隨機遭遇的勝率警示。把這個星系遭遇表裡會開打的項目（海盜、鏽蜂、精英）各模擬一次（取最多隻的編隊），
+  // 回傳 {fightChance, avg, worst, worstName, level, text}；沒有戰鬥項目或模擬失敗回傳 null
+  function routeOdds(save, toId) {
+    var tb = tableOfSystem(toId); if (!tb) return null;
+    var tot = tb.entries.reduce(function (a, e) { return a + e.weight; }, 0), fw = 0, sum = 0, worst = 2, worstName = '';
+    tb.entries.forEach(function (e) {
+      var combos = [];
+      if (e.fleets) e.fleets.forEach(function (f) { combos.push({ w: e.weight * f.w / e.fleets.reduce(function (a, x) { return a + x.w; }, 0), foes: f.enemies }); });
+      else if (e.pool) { var foes = [], n = e.count ? e.count[1] : 1; for (var i = 0; i < n; i++) foes.push(e.pool[i % e.pool.length]); combos.push({ w: e.weight, foes: foes }); }
+      combos.forEach(function (c) {
+        var o = winOdds(save, c.foes, 24); if (o == null) return;
+        fw += c.w; sum += o * c.w;
+        if (o < worst) { worst = o; worstName = c.foes.map(function (id) { return D.enemies[id] ? D.enemies[id].name : id; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).join('、'); }
+      });
+    });
+    if (!fw) return null;
+    var avg = sum / fw, ch = tb.chance * fw / tot, level = avg < 0.4 ? 'bad' : avg < 0.7 ? 'warn' : null;
+    if (worst >= 0.7 && !level) return { fightChance: ch, avg: avg, worst: worst, worstName: worstName, level: null, text: '' };
+    var text = '路上約 ' + Math.round(ch * 100) + '% 機率遇上戰鬥，以你現在的船平均勝率約 ' + Math.round(avg * 100) + '%（最糟：' + worstName + '，約 ' + Math.round(worst * 100) + '%）';
+    if (!level) level = 'warn';
+    return { fightChance: ch, avg: avg, worst: worst, worstName: worstName, level: level, text: text };
   }
   function rollEncounter(save, toId) {
     var tb = tableOfSystem(toId); if (!tb) return null;
@@ -746,8 +769,9 @@
         var keep = Math.floor(save.money * 0.3), H2 = D.hulls.donkey;
         save.money = keep;
         save.ship = { name: save.ship.name, hull: 'donkey', hp: { hull: H2.hull, armor: H2.armor }, loadout: startLoadout('donkey', 1), ammo: {} };
-        addDebt(save, LOAN.destroyAdd);
-        notes.push('逃生艙被送回錨港。現金剩 ' + keep.toLocaleString() + '，船貸 +8,000。');
+        var addD = Math.max(0, Math.min(LOAN.destroyAdd, LOAN.deathCap - save.loan.balance)); // 11/22：獲救加的船貸封頂，避免死亡螺旋
+        addDebt(save, addD);
+        notes.push('逃生艙被送回錨港。現金剩 ' + keep.toLocaleString() + (addD > 0 ? '，船貸 +' + addD.toLocaleString() + '。' : '，船貸已到上限，這次不再增加。'));
         out.insured = false;
       }
       save.cargo = []; save.bounties = [];
@@ -756,7 +780,7 @@
       save.battle = null;
       addLog(save, out.insured
         ? '你的船被擊毀，逃生艙漂了一天後被送回錨港。保險理賠：領回同型船體與起始配備，貨物全失。'
-        : '你的船被擊毀，逃生艙漂了一天後被送回錨港。現金剩 30%，領到一艘只有 1 門雷射的舊驢，船貸加了 8,000。', 'lose');
+        : '你的船被擊毀，逃生艙漂了一天後被送回錨港。現金剩 30%，領到一艘只有 1 門雷射的舊驢' + (addD > 0 ? '，船貸加了 ' + addD.toLocaleString() + '。' : '，船貸已到上限，沒有再加。'), 'lose');
       advance(save, 24);
       save.scene = { fac: null, bar: false, present: [] };
       save.flags.rescuedAt = save.t;
