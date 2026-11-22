@@ -373,16 +373,16 @@
     if (!it.free) {
       if (S.loan && S.loan.missed > (S.flags.missedSeen || 0)) { text += '\n【航行紀錄】船貸又逾期了一期（連續 ' + S.loan.missed + ' 期）。'; }
       if (S.loan) S.flags.missedSeen = S.loan.missed;
-      text += '\n\n' + XO + '\n' + G.navDataText(S) + '\n' + XC;
+      text += '\n\n' + XO + '\n' + G.navDataText(S) + (it.note ? '\n・' + it.note : '') + '\n' + XC;
       S.navSig = navCoreSig(); S.pendingDigest = 0;
     }
     persist();
     return text;
   }
   // 面板自己組的訊息：句子＋【航行資料】。回傳是否真的送出
-  function narrate(sentence, free) {
+  function narrate(sentence, free, note) {
     if (!Br.live || !S) return false;
-    var it = { sentence: sentence, free: !!free, dock: !free && /^【停靠】/.test(sentence) };
+    var it = { sentence: sentence, free: !!free, note: note || '', dock: !free && /^【停靠】/.test(sentence) };
     // 11/22 實測：AI 回覆中連跳三站，排了三則【停靠】，AI 一則一則補寫舊港口。只留最新的一則（日誌會一起帶上）
     if (it.dock) Q = Q.filter(function (q) { return !q.dock; });
     persist();
@@ -403,7 +403,8 @@
     var x = AI.apply(S, { type: 'affection', npc: id, delta: 3 });
     S.aiApplied = (S.aiApplied || []).concat([x && x.msg ? x.msg : '送禮']).slice(-10);
     toast('送了' + gp.good + '給' + gp.name + '。' + (x && x.msg ? x.msg : '')); persist();
-    narrate('【酒吧】我把一份' + gp.good + '送給' + gp.name + '。'); render();
+    // 11/22 實測：送禮 +3 之後 AI 又發了 +2，同一件事算兩次
+    narrate('【酒吧】我把一份' + gp.good + '送給' + gp.name + '。', false, '這份禮物的好感艦橋已經加過了，這則回覆不要再發 ' + gp.name + ' 的 affection 事件'); render();
   }
   function enterBar() {
     var fac = G.dockedFac(S); if (!fac) return;
