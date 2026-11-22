@@ -131,7 +131,7 @@
       cargo: [], market: {},
       bounties: [], log: [], battle: null, flags: { visited: { anc_01_port: true } }, pending: null,
       missions: [], npcs: {}, boards: {}, explored: { anc_01: true }, settings: { test: false, intimacy: '詳寫', every: false }, mseq: 0,
-      scene: { fac: null, bar: false, present: [] }, aiPending: [], aiRejected: [], aiApplied: [], aiSeen: [], pendingDigest: 0, navSig: 0, convId: '', storySummary: '', parley: null, convTurns: 0, turnHinted: false
+      scene: { fac: null, bar: false, present: [] }, tips: {}, aiPending: [], aiRejected: [], aiApplied: [], aiSeen: [], pendingDigest: 0, navSig: 0, convId: '', storySummary: '', parley: null, convTurns: 0, turnHinted: false
     };
     Object.keys(org.rep).forEach(function (k) { save.reputation[k] += org.rep[k]; });
     addLog(save, '你在錨港接下「' + save.ship.name + '」的鑰匙。負債 20,000 信用點，口袋裡只有 3,000。');

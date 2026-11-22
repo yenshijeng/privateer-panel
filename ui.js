@@ -1,4 +1,4 @@
-/* 星域私掠者 面板畫面 ui.js（v0.11：環鱗與精英敵人） */
+/* 星域私掠者 面板畫面 ui.js（v0.12：新手提示與白話文案） */
 (function () {
   'use strict';
   var G = window.XYGame, C = window.XYCombat, AI = window.XYAI, Br = window.XYBridge;
@@ -92,11 +92,47 @@
         render();
         Br.init(onBridge);
       })
-      .catch(function (e) { $('view').innerHTML = '<div class="card"><h3>資料讀取失敗</h3><p>找不到 ' + e.message + '.json，請確認 panel/data 資料夾完整。</p></div>'; });
+      .catch(function (e) { $('view').innerHTML = '<div class="card"><h3>資料讀取失敗</h3><p>找不到 ' + e.message + '.json，請確認 data 資料夾完整。</p></div>'; });
   }
 
   // ---------- 總繪製 ----------
   var TABS = [['story', '劇情'], ['map', '星圖'], ['market', '市場'], ['missions', '任務'], ['yard', '船塢'], ['more', '更多']];
+  // ---------- 新手提示（Sonnet-12）：每則只出現一次，記在 S.tips；出現後留在該分頁直到關掉或離開 ----------
+  var TIP_TEXT = {
+    start: '這裡會顯示 AI 寫的故事。按下方的選項推進劇情，或回聊天室自己打字。',
+    market: '標「產出」（綠）的貨這裡便宜，標「需求」（橘）的貨這裡賣得好。低買高賣就是最穩的賺法。',
+    map: '點下方的目的地出航。危險度越高，越常遇到海盜和鏽蜂，報酬也越好。',
+    missions: '任務有期限，接之前看清楚目的地和危險提示。運貨任務要有足夠貨艙空間。',
+    yard: '修理、換裝備、換船都在這裡。舊船換新船會折抵一部分價錢。',
+    battle: '每回合選一個機動、分配能量。血量低就選「脫離」，打不贏先跑不丟臉。',
+    loan: '船貸快到期了，記得回錨港中樞站繳款，逾期會被催收、聲望下降。',
+    bar: '和酒吧的人聊天能拉好感、接到她們的委託。送她喜歡的貨也有用。'
+  };
+  var shownTip = null; // { key, ctx }：目前畫面上那一則
+  function tipCtx() { return S && S.battle ? 'battle' : tab; }
+  function pendingTip() { // 這個畫面現在該出哪一則（沒有就 null）；一次最多一則
+    if (!S.tips || typeof S.tips !== 'object') S.tips = {};
+    var T = S.tips, c = tipCtx();
+    if (c === 'battle') return T.battle ? null : 'battle';
+    var hl = G.loanHoursLeft(S);
+    if (!T.loan && G.loanActive(S) && hl != null && hl > 0 && hl <= 48 && G.loanShort(S) > 0) return 'loan';
+    if (c === 'story') { if (!T.start) return 'start'; if (!T.bar && S.scene && S.scene.bar) return 'bar'; return null; }
+    return ['map', 'market', 'missions', 'yard'].indexOf(c) >= 0 && !T[c] ? c : null;
+  }
+  function tipCard() { // 回傳這一輪要顯示的提示卡或 null
+    if (!S) return null;
+    var c = tipCtx();
+    if (shownTip && shownTip.ctx !== (shownTip.key === 'loan' ? (c === 'battle' ? 'battle' : 'nav') : c)) shownTip = null; // 船貸提示跨分頁保留，只在進出戰鬥時收起
+    if (!shownTip) {
+      var k = pendingTip(); if (!k) return null;
+      S.tips[k] = 1; shownTip = { key: k, ctx: k === 'loan' ? (c === 'battle' ? 'battle' : 'nav') : c }; persist();
+    }
+    var key = shownTip.key;
+    return h('div', { class: 'card tip', id: 'tipcard', 'data-tip': key, style: 'border-color:#5fd7d0;background:rgba(95,215,208,.08);display:flex;gap:8px;align-items:flex-start' }, [
+      h('span', { style: 'font-size:18px;line-height:1.3', text: '💡' }),
+      h('div', { class: 'sm', style: 'flex:1;min-width:0', text: TIP_TEXT[key] }),
+      h('button', { class: 'btn sm sec', id: 'tipclose', style: 'flex:none', text: '知道了', onclick: function () { shownTip = null; render(); } })]);
+  }
   function render() {
     if (!S) { if (legacy) renderLegacy(); else renderCreate(); $('top').innerHTML = ''; $('tabs').innerHTML = ''; $('battle').style.display = 'none'; Br.disarm(); return; }
     fixScene(); checkLoanFlip();
@@ -105,6 +141,7 @@
     $('battle').style.display = 'none';
     var v = $('view'), keep = v.scrollTop; v.innerHTML = '';
     ({ story: viewStory, map: viewMap, market: viewMarket, missions: viewMissions, yard: viewYard, more: viewMore })[tab](v);
+    var tc = tipCard(); if (tc) v.insertBefore(tc, v.firstChild);
     v.scrollTop = keep;
   }
   function renderTop() {
@@ -162,7 +199,7 @@
       S.convId = lastConvId || '';
       persist(); $('view').style.top = '';
       var f0 = G.dockedFac(S); if (f0) { S.flags.dockT = S.flags.dockT || {}; S.flags.dockT[f0.id] = S.t; narrate('【停靠】我把船停進' + f0.name + '。'); }
-      render();
+      setTab('story'); render();
     } })])].forEach(function (x) { card.appendChild(x); });
     v.appendChild(card);
   }
@@ -715,7 +752,7 @@
     box.appendChild(h('div', { class: 'sm dim', 'data-sell': q.sell.length, text: q.sell.length ? q.sell.map(function (x) { return nm(x) + '（+' + fmt(x.value) + '）'; }).join('、') : '（沒有）' }));
     box.appendChild(h('div', { class: 'sm', style: 'margin-top:6px', text: '貨艙：' + q.used + '／' + q.newCap + ' 格　耗時 ' + q.hours + ' 小時' }));
     if (!q.ok) box.appendChild(h('div', { class: 'bad sm', id: 'swapwhy', style: 'margin-top:6px', text: q.reason }));
-    box.appendChild(h('div', { class: 'row', style: 'margin-top:10px' }, [h('button', { class: 'btn', id: 'confirmSwap', disabled: !q.ok, text: '確認換船', onclick: function () { closeModal(); act(G.swapShip(S, hullId)); } }), h('button', { class: 'btn sec', text: '取消', onclick: closeModal })]));
+    box.appendChild(h('div', { class: 'row', style: 'margin-top:10px' }, [h('button', { class: 'btn', id: 'confirmSwap', disabled: !q.ok, text: '買下並換船', onclick: function () { closeModal(); act(G.swapShip(S, hullId)); } }), h('button', { class: 'btn sec', text: '取消', onclick: closeModal })]));
     modal(box);
   }
 
@@ -839,6 +876,10 @@
         b.appendChild(box);
       });
     }));
+    v.appendChild(sect('tips', '新手提示', function (b) {
+      b.appendChild(h('div', { class: 'sm dim', text: '每則提示只會出現一次。想再看一遍，按下面的按鈕。' }));
+      b.appendChild(h('button', { class: 'btn sm sec', id: 'resetTips', style: 'margin-top:6px', text: '重新顯示新手提示', onclick: function () { S.tips = {}; shownTip = null; persist(); toast('新手提示會重新出現。'); render(); } }));
+    }));
     v.appendChild(sect('settings', '設定', function (b) {
       b.appendChild(h('label', { class: 'row', style: 'gap:8px;align-items:center' }, [h('input', { type: 'checkbox', id: 'testMode', checked: !!(S.settings && S.settings.test), onchange: function (e) { S.settings = S.settings || {}; S.settings.test = e.target.checked; persist(); render(); } }), h('span', { text: '測試模式（顯示調整好感的測試按鈕）' })]));
       b.appendChild(h('div', { class: 'sm dim', text: '給開發測試用，一般玩家不需要打開。' }));
@@ -910,6 +951,7 @@
     if (!st.over) {
       if (!o.targets.some(function (t) { return t.id === B.target; })) B.target = o.targets[0] ? o.targets[0].id : null;
     }
+    var tcb = tipCard(); if (tcb) inn.appendChild(tcb);
     inn.appendChild(h('div', { class: 'row sb', style: 'margin:4px 0 8px' }, [h('b', { text: '第 ' + st.turn + ' 回合' }), h('span', { class: 'dim sm', text: '點敵艦卡片＝選為目標' })]));
 
     // 敵艦
@@ -1000,7 +1042,7 @@
 
     // 確認鈕
     var bad = (B.m === 'flank' || B.m === 'tail') && !B.target;
-    var btn = h('button', { class: 'btn', style: 'width:100%', text: B.m ? '確認這回合' : '先選一個機動', disabled: !B.m || bad || needW > B.alloc.w, onclick: confirmTurn });
+    var btn = h('button', { class: 'btn', style: 'width:100%', text: B.m ? '出手！' : '先選一個機動', disabled: !B.m || bad || needW > B.alloc.w, onclick: confirmTurn });
     foot.appendChild(btn);
     el.scrollTop = keep;
 
