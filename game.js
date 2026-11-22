@@ -1211,6 +1211,9 @@
         : '；這艘船沒有藏貨夾層（要到船塢買改裝件），不要叫玩家敲艙壁、找暗格或說舊船主動過手腳'));
       if (patrolSeen) L.push('・巡邏艦攔檢發生在兩站之間的航道上，沒有哨門或檢查站；港口人員不會「接到哨點通報」，只能照上面日誌所寫');
     }
+    var affDone = []; // 委託完成／談完時艦橋已加好感 +10；AI 若再發 affection 就算兩次（11/22 實測雷芷嵐 +10 之外 AI 又發 +3）
+    recent.forEach(function (x) { var mm = x.match(/(\S+?)的委託完成，好感 \+10/) || x.match(/和(\S+?)談完了，好感 \+10/); if (mm && affDone.indexOf(mm[1]) < 0) affDone.push(mm[1]); });
+    if (affDone.length) L.push('・' + affDone.join('、') + '的委託好感艦橋已經加過了，這則回覆不要再發 ' + affDone.join('、') + ' 的 affection 事件');
     if (mkLine) L.push('・NPC 提到哪種貨缺、哪種貨好賣時，照「本站市場」寫，不要自己編；成交價只看艦橋市場');
     pr.forEach(function (x) {
       if (x.open) L.push('・' + x.name + '的親密互動已開放，須雙方合意；玩家沒有表示意願時不主動推進');
