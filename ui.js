@@ -282,7 +282,7 @@
     var list = h('div', { class: 'card' }, [h('h3', { text: '從' + cur.name + '出航' })]);
     G.neighbors(S).forEach(function (n) {
       list.appendChild(h('div', { class: 'opt' + (selDest === n.id ? ' on' : ''), 'data-nb': n.id, onclick: function () { selSys = n.id; selDest = n.id; render(); } },
-        [h('div', { class: 'row sb' }, [h('b', { text: n.name + (G.isExplored(S, n.id) ? '' : '（未探索）') }), h('span', { class: 'dim', text: n.flight + ' 小時' })]),
+        [h('div', { class: 'row sb' }, [h('b', { text: n.name + (G.isExplored(S, n.id) ? '' : '（未探索）') + (G.Mis.actives(S).some(function (m) { return m.dest === n.id; }) ? '　📌任務目的地' : '') }), h('span', { class: 'dim', text: n.flight + ' 小時' })]),
         h('div', { class: 'sm dim', text: '危險度：' + DNAME[n.danger] + (D.sectors[D.systems[n.id]._sector].id !== cur._sector ? '｜通往' + D.sectors[D.systems[n.id]._sector].name : '') })]));
     });
     v.appendChild(list);
@@ -363,22 +363,31 @@
     clearTimeout(flushT); flushT = null;
     if (!Q.length) return;
     if (busy || Date.now() - lastSendAt < 4000) { flushT = setTimeout(flushQ, 1500); return; }
-    var text = Q.shift(); sendRaw(text);
+    var it = Q.shift(); sendRaw(buildMsg(it));
     if (Q.length) flushT = setTimeout(flushQ, 4200);
   }
-  // 面板自己組的訊息：句子＋【航行資料】。回傳是否真的送出
-  function narrate(sentence, free) {
-    if (!Br.live || !S) return false;
-    var text = sentence;
-    if (!free) {
+  // 送出當下才組【航行資料】：排隊期間的跳躍、交易都會反映在最後送出的那則裡
+  function buildMsg(it) {
+    if (!S) return it.sentence;
+    var text = it.sentence;
+    if (!it.free) {
       if (S.loan && S.loan.missed > (S.flags.missedSeen || 0)) { text += '\n【航行紀錄】船貸又逾期了一期（連續 ' + S.loan.missed + ' 期）。'; }
       if (S.loan) S.flags.missedSeen = S.loan.missed;
       text += '\n\n' + XO + '\n' + G.navDataText(S) + '\n' + XC;
       S.navSig = navCoreSig(); S.pendingDigest = 0;
     }
     persist();
+    return text;
+  }
+  // 面板自己組的訊息：句子＋【航行資料】。回傳是否真的送出
+  function narrate(sentence, free) {
+    if (!Br.live || !S) return false;
+    var it = { sentence: sentence, free: !!free, dock: !free && /^【停靠】/.test(sentence) };
+    // 11/22 實測：AI 回覆中連跳三站，排了三則【停靠】，AI 一則一則補寫舊港口。只留最新的一則（日誌會一起帶上）
+    if (it.dock) Q = Q.filter(function (q) { return !q.dock; });
+    persist();
     setTab('story');
-    if (busy || Date.now() - lastSendAt < 4000 || Q.length) { Q.push(text); flushQ(); } else sendRaw(text);
+    if (busy || Date.now() - lastSendAt < 4000 || Q.length) { Q.push(it); flushQ(); } else sendRaw(buildMsg(it));
     return true;
   }
   function sendFree(sentence) { if (narrate(sentence, true)) render(); else toast('目前不在對話裡。'); }
@@ -473,6 +482,7 @@
     var box = h('div', { id: 'resumeModal' }, [h('h3', { text: '這是新的對話' }), h('p', { class: 'sm', text: '艦橋找到一份舊進度。要接著玩，還是重新開始？' })]);
     box.appendChild(h('button', { class: 'btn', id: 'resumeBtn', style: 'width:100%;margin:6px 0', text: '接續目前進度', onclick: function () {
       S.convId = d.id; S.convTurns = 0; S.convLastN = ''; S.turnHinted = false; persist(); closeModal();
+      S.pendingDigest = 8; // 新對話沒有前文，帶最近 8 筆日誌（11/22 實測：原本是「（無）」）
       narrate('【接續進度】請依下面的資料接著演。\n' + (S.storySummary || '（尚無劇情摘要）'));
       render();
     } }));
@@ -500,7 +510,7 @@
     if (Br.live && !lastStory) card.appendChild(h('div', { class: 'dim', text: '還沒有 AI 的回覆。在下面的對話框說些什麼，或用上方的按鈕開始。' }));
     if (lastStory) lastStory.blocks.forEach(function (b) {
       if (b.k === 'st') card.appendChild(h('div', { class: 'sm dim', style: 'margin-bottom:6px', text: b.t }));
-      else if (b.k === 'p') card.appendChild(h('p', { text: b.t }));
+      else if (b.k === 'p') { var tp = String(b.t || '').split(XS).join('').split(XE).join('').trim(); if (tp) card.appendChild(h('p', { text: tp })); }
       else if (b.k === 'd') card.appendChild(h('p', null, [b.s ? h('b', { text: b.s + '：' }) : null, b.t]));
     });
     if (Br.live) v.appendChild(card);
