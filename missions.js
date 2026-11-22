@@ -183,6 +183,7 @@
         .replace(/\{dest\}/g, ds.name).replace(/\{target\}/g, ds.name).replace(/\{mood\}/g, mood).replace(/\{reward\}/g, fmt(reward));
       return o;
     }
+    function hasElite(offers) { return offers.some(function (x) { var t = D().tpl[x.tpl]; return t && t.elite; }); }
     function boardInfo(save, facId) {
       ensure(save);
       var fac = D().facs[facId];
@@ -196,7 +197,9 @@
           var pool = [];
           tpls.forEach(function (t) { var g = eligible(save, fac, t); if (g) pool.push({ t: t, g: g, w: t.weight }); });
           if (!pool.length) break;
-          var pk = pickWeighted(rnd, pool), o = gen(save, sysId, facId, pk.t, pk.g, rnd, null);
+          var pk = pickWeighted(rnd, pool);
+          if (pk.t.elite && hasElite(offers)) continue; // 每張任務板每天最多 1 個精英任務
+          var o = gen(save, sysId, facId, pk.t, pk.g, rnd, null);
           if (!o) continue;
           var key = o.tpl + '>' + o.dest; if (used[key]) continue; used[key] = 1;
           o.oid = day + ':' + facId + ':' + offers.length; o.taken = false; offers.push(o);
@@ -209,7 +212,7 @@
         var rnd2 = mk(save.seed + '|' + day + '|' + facId + '|intel|' + si), types = slots[si], tp2 = D().missionTpls || [], got = null;
         for (var tr = 0; tr < 40 && !got; tr++) {
           var pool2 = [];
-          tp2.forEach(function (t) { if (types && types.indexOf(t.type) < 0) return; var g = eligible(save, fac, t); if (g) pool2.push({ t: t, g: g, w: t.weight }); });
+          tp2.forEach(function (t) { if (types && types.indexOf(t.type) < 0) return; if (t.elite && hasElite(b.offers)) return; var g = eligible(save, fac, t); if (g) pool2.push({ t: t, g: g, w: t.weight }); });
           if (!pool2.length) break;
           var pk2 = pickWeighted(rnd2, pool2), o2 = gen(save, D().facSys[facId], facId, pk2.t, pk2.g, rnd2, null);
           if (o2) { o2.oid = day + ':' + facId + ':' + b.offers.length; o2.taken = false; o2.perk = true; got = o2; }

@@ -355,6 +355,159 @@
    },
    "image": "ss_ship_drone_big.png",
    "desc": "鏽蜂群裡的大型個體，雙鑽針，專挑落單的船下手。"
+  },
+  {
+   "id": "ringray",
+   "name": "環鱗",
+   "class": "遺環突擊艦",
+   "price": 360000,
+   "hull": 260,
+   "armor": 115,
+   "energy": 12,
+   "agility": 6,
+   "speed": 6,
+   "cargo": 30,
+   "jumpCharge": 2,
+   "shipyard": 2,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 2,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 1,
+    "special": 3
+   },
+   "image": "ss_ship_ringray.png",
+   "desc": "遺環會用舊環門零件拼出的突擊艦，又快又硬。",
+   "lock": {
+    "faction": "relic",
+    "tier": "friendly"
+   },
+   "soldAt": [
+    "wrk_04_scrap"
+   ]
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "corsair",
+   "name": "血旗艦",
+   "hull": 230,
+   "armor": 90,
+   "energy": 9,
+   "agility": 6,
+   "speed": 6,
+   "cargo": 10,
+   "jumpCharge": 2,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 1,
+    "shield": 1,
+    "engine": 1,
+    "jump": 1,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_corsair.png",
+   "desc": "赤帆團船長們輪流掌舵的旗艦，船首漆著血紅的帆。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "drone_mother",
+   "name": "鏽蜂母巢",
+   "hull": 420,
+   "armor": 60,
+   "energy": 8,
+   "agility": 2,
+   "speed": 3,
+   "cargo": 0,
+   "jumpCharge": 9,
+   "slots": {
+    "gun": [
+     {
+      "arc": "turret"
+     },
+     {
+      "arc": "turret"
+     },
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 0,
+    "jump": 0,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_drone_mother.png",
+   "desc": "鏽蜂群的母體，外殼佈滿孵化孔，會不斷放出小蜂。"
+  },
+  {
+   "class": "敵艦",
+   "price": 0,
+   "shipyard": null,
+   "id": "warden",
+   "name": "環守衛",
+   "hull": 260,
+   "armor": 120,
+   "energy": 11,
+   "agility": 4,
+   "speed": 4,
+   "cargo": 0,
+   "jumpCharge": 9,
+   "slots": {
+    "gun": [
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "front"
+     },
+     {
+      "arc": "turret"
+     }
+    ],
+    "missile": 0,
+    "shield": 1,
+    "engine": 1,
+    "jump": 0,
+    "cargoExt": 0,
+    "special": 0
+   },
+   "image": "ss_ship_warden.png",
+   "desc": "舊環門殘骸裡醒來的古代守衛機，光束能從遠處打穿護盾。"
   }
  ],
  "equipment": [
@@ -916,6 +1069,48 @@
     "regen": 2
    },
    "desc": "敵艦專用，玩家買不到。"
+  },
+  {
+   "id": "rust_lance",
+   "name": "鏽蜂酸刺",
+   "type": "gun",
+   "tier": 3,
+   "price": 0,
+   "stats": {
+    "dmg": 26,
+    "bands": [
+     "mid",
+     "near",
+     "close"
+    ],
+    "acc": 0,
+    "energy": 1,
+    "vsShield": 0.9,
+    "vsArmor": 1.3
+   },
+   "desc": "鏽蜂母巢的酸刺，敵人專用。",
+   "lock": null
+  },
+  {
+   "id": "warden_beam",
+   "name": "環守光束",
+   "type": "gun",
+   "tier": 4,
+   "price": 0,
+   "stats": {
+    "dmg": 38,
+    "bands": [
+     "far",
+     "mid",
+     "near"
+    ],
+    "acc": 5,
+    "energy": 2,
+    "vsShield": 1.2,
+    "vsArmor": 1.0
+   },
+   "desc": "環守衛的光束，敵人專用。",
+   "lock": null
   }
  ]
 }

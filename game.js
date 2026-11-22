@@ -422,7 +422,15 @@
     });
   }
   function tableOfSystem(sysId) { var s = D.systems[sysId]; return s ? D.tables[s.encounter] : null; }
-  var ENC_NAME = { patrol: '巡邏艦', pirate: '赤帆海盜', rust: '鏽蜂', distress: '求救訊號', derelict: '漂流殘骸' };
+  var ENC_NAME = { patrol: '巡邏艦', pirate: '赤帆海盜', rust: '鏽蜂', distress: '求救訊號', derelict: '漂流殘骸', elite: '精英敵艦' };
+  // ---- 精英（Sonnet-11）：名字前加「★精英」；不進交涉；擊毀後聲望照這張表（精英不套一般赤帆擊毀的聲望）----
+  var ELITE_REP = { enemy_elite_flagship: { redsail: -5, fleet: 3 }, enemy_elite_warden: { relic: 3 }, enemy_elite_mother: {} };
+  function isElite(id) { return !!(D.enemies[id] && D.enemies[id].elite); }
+  function eliteTag(name) { return '★精英' + name; }
+  function eliteNames(enc) {
+    var cnt = {}; (enc.enemies || []).forEach(function (id) { cnt[id] = (cnt[id] || 0) + 1; });
+    return Object.keys(cnt).map(function (id) { var d = D.enemies[id], n = d ? d.name : id; return (isElite(id) ? eliteTag(n) : n) + '×' + cnt[id]; }).join('、');
+  }
   function travelPreview(save, toId) {
     var l = curSystem(save).links.filter(function (x) { return x.to === toId; })[0];
     if (!l) return null;
@@ -441,7 +449,11 @@
     var tot = tb.entries.reduce(function (a, e) { return a + e.weight; }, 0), r = rand(save) * tot, pick = tb.entries[0];
     for (var i = 0; i < tb.entries.length; i++) { r -= tb.entries[i].weight; if (r < 0) { pick = tb.entries[i]; break; } }
     var enc = { type: pick.type, faction: pick.faction || null };
-    if (pick.pool) {
+    if (pick.fleets) { // 精英：固定編隊，依 w 加權挑一組
+      var ft = pick.fleets.reduce(function (a, f) { return a + f.w; }, 0), fr = rand(save) * ft, fl = pick.fleets[0];
+      for (var fi = 0; fi < pick.fleets.length; fi++) { fr -= pick.fleets[fi].w; if (fr < 0) { fl = pick.fleets[fi]; break; } }
+      enc.enemies = fl.enemies.slice(); enc.elite = true;
+    } else if (pick.pool) {
       var n = randInt(save, pick.count[0], pick.count[1]);
       enc.enemies = [];
       for (var k = 0; k < n; k++) enc.enemies.push(pick.pool[randInt(save, 0, pick.pool.length - 1)]);
@@ -502,7 +514,7 @@
     if (enc && enc.enemies) {
       startBattle(save, enc, toId);
       res.battle = true;
-      addLog(save, '從' + from + '出航往' + pv.name + '，途中遭遇' + (enc.type === 'mission' ? '任務目標' : ENC_NAME[enc.type]) + '。', 'enc');
+      addLog(save, '從' + from + '出航往' + pv.name + '，途中遭遇' + (enc.elite ? '精英敵艦〔' + eliteNames(enc) + '〕，對方不談條件' : enc.type === 'mission' ? '任務目標' : ENC_NAME[enc.type]) + '。', 'enc');
       return res;
     }
     var head = '從' + from + '出航往' + pv.name + '。';
@@ -652,8 +664,10 @@
     var seed = randInt(save, 1, 2147483646);
     var ambush = rand(save) < 0.15;
     var p = save.player;
+    var cd = clone(D.combatData);
+    cd.enemies.forEach(function (e) { if (e.elite) e.name = eliteTag(e.name); }); // 戰鬥畫面、戰報、擊毀紀錄都會帶標籤
     var st = Combat.create({
-      data: clone(D.combatData),
+      data: cd,
       player: { name: p.name, stats: { pilot: p.stats.pilot, gunnery: p.stats.gunnery },
         ship: { hull: save.ship.hull, hp: { hull: save.ship.hp.hull, armor: save.ship.hp.armor }, loadout: save.ship.loadout, ammo: save.ship.ammo } },
       enemies: enc.enemies, seed: seed,
@@ -662,6 +676,7 @@
     delete st.player.hp;
     save.battle = { state: st, dest: toId, enc: enc, mission: enc.mission || null };
     if (ambush) st.log.push({ t: 1, k: 'start', x: '你被伏擊了，對方已經貼近。' });
+    if (enc.enemies.indexOf('enemy_elite_flagship') >= 0) st.log.push({ t: 1, k: 'start', x: '血旗艦的通訊只有一句：「血旗艦不談條件。」' });
     return st;
   }
   function battleStep(save, order) {
@@ -727,6 +742,7 @@
     gainXp(save, 'pilot', sm.xp.pilot);
     gainXp(save, 'gunnery', sm.xp.gunnery);
     sm.kills.forEach(function (k) {
+      if (ELITE_REP[k.id]) { Object.keys(ELITE_REP[k.id]).forEach(function (f) { addRep(save, f, ELITE_REP[k.id][f]); }); return; }
       if (k.faction === 'redsail') { addRep(save, 'redsail', -3); addRep(save, 'fleet', 2); addRep(save, 'league', 1); }
     });
     addLog(save, sm.text, 'battle');
@@ -745,7 +761,7 @@
   var SINGLE = { shield: 1, engine: 1, jump: 1 };
   var SWAP_HOURS = 4, REFIT_HOURS = 1, SELL_RATE = 0.5, TRADE_RATE = 0.6;
   var TIER_ORDER = ['nemesis', 'hostile', 'neutral', 'friendly', 'ally'];
-  var HEAVY_FOES = ['enemy_pirate_heavy', 'enemy_rust_hunter'];
+  var HEAVY_FOES = ['enemy_pirate_heavy', 'enemy_rust_hunter', 'enemy_elite_flagship', 'enemy_elite_mother', 'enemy_elite_warden'];
 
   function padArr(a, n) { var o = []; for (var i = 0; i < n; i++) o.push(a && a[i] ? a[i] : null); return o; }
   function slotCount(H, kind) {
@@ -965,15 +981,18 @@
   }
   function hullCap(H, lo) { var cap = H.cargo; lo.cargo.forEach(function (id) { if (id) cap += D.equip[id].stats.cap || 0; }); return cap; }
   function yardHulls(save) { // 這座船塢買得到的船（依價格）
-    var tier = yardTier(save);
-    return Object.keys(D.hulls).map(function (k) { return D.hulls[k]; }).filter(function (H) { return H.shipyard != null && H.shipyard <= tier; }).sort(function (a, b) { return a.price - b.price; });
+    var tier = yardTier(save), fc = dockedFac(save), fid = fc ? fc.id : null;
+    return Object.keys(D.hulls).map(function (k) { return D.hulls[k]; }).filter(function (H) { return H.shipyard != null && H.shipyard <= tier && (!H.soldAt || H.soldAt.indexOf(fid) >= 0); }).sort(function (a, b) { return a.price - b.price; });
   }
   // 試算：不改存檔。ok＝現在能不能換；reason＝不能的原因；有算出金額時一律附上，畫面才能顯示
+  function hullLock(save, H) { return H && H.lock && !lockOk(save, H.lock) ? lockText(H.lock) : null; } // null＝買得到
   function swapQuote(save, hullId) {
     var g = yardGate(save); if (!g.ok) return { ok: false, reason: g.msg };
     var H = D.hulls[hullId];
     if (!H || H.shipyard == null) return { ok: false, reason: '這種船不賣。' };
     if (H.shipyard > g.tier) return { ok: false, reason: '要 ' + H.shipyard + ' 級以上船塢。' };
+    if (H.soldAt && H.soldAt.indexOf(g.fac.id) < 0) return { ok: false, reason: '這種船只在特定船塢賣。' };
+    if (hullLock(save, H)) return { ok: false, reason: hullLock(save, H), locked: true, price: H.price };
     if (hullId === save.ship.hull) return { ok: false, reason: '你已經開著這種船了。' };
     var cur = D.hulls[save.ship.hull], mx = shipMax(save);
     var repairFee = Math.max(0, mx.hull - save.ship.hp.hull + mx.armor - save.ship.hp.armor) * REPAIR_COST;
@@ -1084,6 +1103,7 @@
     L.push('聲望：' + rep.join('｜'));
     Mis.navLines(save).forEach(function (x) { L.push(x); });
     if (save.bounties.length) L.push('待領賞金：' + bountyTotal(save).toLocaleString() + ' 信用點');
+    if (save.battle && save.battle.enc && save.battle.enc.elite) L.push('遭遇：精英敵艦〔' + eliteNames(save.battle.enc) + '〕（精英），對方不談條件，直接開打');
     if (save.parley) L.push('交涉中：赤帆海盜〔' + parleyEnemyText(save.parley.enc) + '〕要求〔' + demandText(save.parley.demand) + '〕');
     if (pr.length) L.push('在場：' + pr.map(function (x) { return x.name + '（' + x.role + '）好感 ' + x.stage + '｜親密互動：' + (x.open ? '已開放' : '未開放') + (x.talk ? '｜委託待談' : ''); }).join('；'));
     if (!opts.core) {
@@ -1117,7 +1137,7 @@
     payLoan: payLoan, payLoanPeriod: payLoanPeriod, addDebt: addDebt,
     bountyTotal: bountyTotal, canClaimBounty: canClaimBounty, claimBounties: claimBounties,
     insured: insured, insurancePremium: insurancePremium, buyInsurance: buyInsurance,
-    curSystem: curSystem, neighbors: neighbors, travelPreview: travelPreview, depart: depart, arrive: arrive, ENC_NAME: ENC_NAME,
+    curSystem: curSystem, rollEncounter: rollEncounter, neighbors: neighbors, travelPreview: travelPreview, depart: depart, arrive: arrive, ENC_NAME: ENC_NAME,
     patrolCheck: patrolCheck, scanChance: scanChance,
     startBattle: startBattle, battleStep: battleStep, claimBattle: claimBattle,
     validateSave: validateSave, isLegacySave: isLegacySave, exportSave: exportSave, importSave: importSave, navDataText: navDataText, presentInfo: presentInfo,
@@ -1126,7 +1146,7 @@
     // 船塢（Sonnet-06）
     SLOT_NAME: SLOT_NAME, SLOT_ORDER: SLOT_ORDER, SWAP_HOURS: SWAP_HOURS, REFIT_HOURS: REFIT_HOURS,
     normLoadout: normLoadout, loadoutView: loadoutView, slotCount: slotCount, equipValue: equipValue, flightHours: flightHours,
-    yardGate: yardGate, yardTier: yardTier, yardHulls: yardHulls, swapQuote: swapQuote, swapShip: swapShip,
+    yardGate: yardGate, yardTier: yardTier, yardHulls: yardHulls, hullLock: hullLock, swapQuote: swapQuote, isElite: isElite, eliteNames: eliteNames, swapShip: swapShip,
     slotOptions: slotOptions, equipBuyCheck: equipBuyCheck, installEquip: installEquip, removeEquip: removeEquip,
     ammoStatus: ammoStatus, refillAmmo: refillAmmo,
     holdInfo: holdInfo, setHidden: setHidden, canHide: canHide, syncHidden: syncHidden, visibleQty: visibleQty, missionWarn: missionWarn

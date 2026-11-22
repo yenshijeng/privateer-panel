@@ -1,4 +1,4 @@
-/* 星域私掠者 面板畫面 ui.js（v0.10：艦橋圖片） */
+/* 星域私掠者 面板畫面 ui.js（v0.11：環鱗與精英敵人） */
 (function () {
   'use strict';
   var G = window.XYGame, C = window.XYCombat, AI = window.XYAI, Br = window.XYBridge;
@@ -29,8 +29,9 @@
   // ---------- 圖片（Sonnet-10）：載入失敗一律隱藏，不擋畫面 ----------
   var IMG_BASE = 'https://res.cloudinary.com/zerzrnhd/image/upload/v1795268376/';
   var NPC_IMG = { npc_ke_xuetang: 'ke', npc_ge_li: 'ge', npc_lei_zhilan: 'lei', npc_yi_man: 'yi', npc_lu_shuang: 'lu', npc_qiao_wei: 'qiao' };
-  var SHIP_IMG = { donkey: 1, falcon: 1, albatross: 1, badger: 1, whaleshark: 1 };
-  function imgUrl(name) { return IMG_BASE + 'ss_' + name + '.png'; }
+  var SHIP_IMG = { donkey: 1, falcon: 1, albatross: 1, badger: 1, whaleshark: 1, ringray: 1 };
+  var IMG_VER = { ship_ringray: 2 }; // 同網址換過圖時加 ?v=，避免瀏覽器與 CDN 給舊圖
+  function imgUrl(name) { return IMG_BASE + 'ss_' + name + '.png' + (IMG_VER[name] ? '?v=' + IMG_VER[name] : ''); }
   // 固定高度的容器＋裡面 width:100% 的圖（cover）。失敗時整個容器隱藏
   function picBox(name, boxStyle, pos, attrs) {
     var box = h('div', Object.assign({ class: 'pic', style: 'width:100%;overflow:hidden;background:#0a0f20;' + (boxStyle || '') }, attrs || {}), []);
@@ -271,6 +272,7 @@
     var r = G.depart(S, to); selDest = null; B = { m: null, target: null, fire: {}, ftarget: {}, alloc: null, all: false };
     persist();
     if (!r.ok) { toast(r.msg); render(); return; }
+    if (r.battle && r.enc && r.enc.elite) narrate('【遭遇】精英敵艦出現：' + G.eliteNames(r.enc) + '，對方不談條件。');
     if (r.parley) { toast('赤帆的船擋住了航道。'); if (!narrate('【遭遇】赤帆的船擋住航道，對方發來通訊。')) tab = 'map'; render(); return; }
     if (!r.battle && S.loc.docked) {
       var af = G.dockedFac(S), lastT = S.flags.dockT && S.flags.dockT[af.id];
@@ -691,7 +693,9 @@
       var thumb = SHIP_IMG[H.id] ? h('div', { style: 'width:84px;flex:none;margin-right:10px' }, [picBox('ship_' + H.id, 'aspect-ratio:1/1;border-radius:8px', 'center', { 'data-shippic': H.id })]) : null;
       var body = h('div', { style: 'flex:1;min-width:0' }, [h('div', { class: 'row sb' }, [h('span', null, [h('b', { text: H.name }), h('span', { class: 'sm dim', text: '　' + H.class }), isCur ? h('span', { class: 'tag p', text: '目前' }) : null]), h('b', { text: fmt(H.price) })]),
         h('div', { class: 'sm dim', text: H.desc }), hullStats(H, cur),
-        isCur ? null : h('button', { class: 'btn sm', style: 'margin-top:6px', 'data-swap': H.id, text: '試算換船', onclick: function () { swapModal(H.id); } })]);
+        isCur ? null : (G.hullLock(S, H)
+          ? h('button', { class: 'btn sm', style: 'margin-top:6px', 'data-swap': H.id, 'data-locked': '1', disabled: true, text: G.hullLock(S, H) })
+          : h('button', { class: 'btn sm', style: 'margin-top:6px', 'data-swap': H.id, text: '試算換船', onclick: function () { swapModal(H.id); } }))]);
       card.appendChild(h('div', { class: 'opt' + (isCur ? ' on' : ''), 'data-hull': H.id, style: 'display:flex;align-items:flex-start' }, [thumb, body]));
     });
     v.appendChild(card);
@@ -1024,7 +1028,10 @@
       var out = G.claimBattle(S); persist(); B = { m: null, target: null, fire: {}, ftarget: {}, alloc: null, all: false };
       tab = 'map';
       if (lost) narrate('【獲救】我的船被擊毀，逃生艙把我送回了錨港。' + (out && out.insured ? '有保險，領回了同型船體與起始配備，貨物全失。' : '沒有保險，現金只剩三成，領到一艘舊驢，船貸加了一筆。'));
-      else narrate(sm0.text);
+      else {
+        var el = sm0.kills.filter(function (k) { return G.isElite(k.id); }).map(function (k) { return '擊沉★精英〔' + k.name.replace(/^★精英/, '') + '〕'; });
+        narrate(sm0.text + (el.length ? el.join('，') + '。' : ''));
+      }
       render();
       if (out && out.notes.length) toast(out.notes.join(' '));
     } }));
