@@ -294,6 +294,7 @@
         h('div', { html: '航程 <b>' + pv.flight + '</b> 小時' + (pv.flight !== pv.dist ? '（短躍引擎縮短，原本 ' + pv.dist + ' 小時）' : '') + '，加上離港 1 小時，共 <b>' + pv.hours + '</b> 小時（抵達約 ' + G.fmtClock(S.t + pv.hours) + '）' }),
         h('div', { html: '危險度：<b style="color:' + DCOL[pv.danger] + '">' + DNAME[pv.danger] + '</b>；途中遇到事情的機率約 <b>' + Math.round(pv.chance * 100) + '%</b>' }),
         h('div', { class: 'sm', text: '可能遇到：' + pv.likely.map(function (x) { return x.name + ' ' + Math.round(x.p * 100) + '%'; }).join('、') + '（以上是「遇到事情」時的比例）' }),
+        pv.odds && pv.odds.level ? h('div', { class: 'sm ' + (pv.odds.level === 'bad' ? 'bad' : 'warn'), id: 'routewarn', 'data-warn': pv.odds.level, text: pv.odds.text + '。海盜通常可以先談條件。' }) : null,
         h('div', { style: 'margin-top:10px' }, [h('button', { class: 'btn', id: 'goBtn', text: '出航', onclick: function () { doDepart(selDest); } })])]));
     }
   }
