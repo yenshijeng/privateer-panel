@@ -4,7 +4,7 @@
   var G = window.XYGame, C = window.XYCombat, AI = window.XYAI, Br = window.XYBridge;
   var S = null;                       // 存檔
   var legacy = false;                 // 讀到舊版（v1）存檔
-  var tab = 'map', selDest = null, selSys = null, mapView = 'global', selMis = null, openGood = null, qtyMap = {}, moreOpen = { log: true }, loanAmt = '';
+  var tab = 'map', selFor = null, selDest = null, selSys = null, mapView = 'global', selMis = null, openGood = null, qtyMap = {}, moreOpen = { log: true }, loanAmt = '';
   var B = { m: null, target: null, fire: {}, ftarget: {}, alloc: null, all: false }; // 戰鬥畫面的暫存選擇（不進存檔）
   var $ = function (id) { return document.getElementById(id); };
   // 橋接狀態（不進存檔）
@@ -105,7 +105,7 @@
     missions: '任務有期限，接之前看清楚目的地和危險提示。運貨任務要有足夠貨艙空間。',
     yard: '修理、換裝備、換船都在這裡。舊船換新船會折抵一部分價錢。',
     battle: '每回合選一個機動、分配能量。血量低就選「脫離」，打不贏先跑不丟臉。',
-    loan: '船貸快到期了，記得回錨港中樞站繳款，逾期會被催收、聲望下降。',
+    loan: '船貸快到期了，到船塢頁繳款：聯盟設施免手續費，其他港口匯款收 5%。逾期會被催收、聲望下降。',
     bar: '和酒吧的人聊天能拉好感、接到她們的委託。送她喜歡的貨也有用。'
   };
   var shownTip = null; // { key, ctx }：目前畫面上那一則
@@ -218,6 +218,8 @@
   var DNAME = ['很安全', '還算安全', '有點危險', '危險', '很危險', '極度危險'];
   function viewMap(v) {
     var pcm = parleyCard(); if (pcm) v.appendChild(pcm);
+    // 11/22：船毀被送回錨港後，星圖還停在上一次選的赤岩。換了所在地就重設選取
+    if (S.loc.system !== selFor) { selFor = S.loc.system; selSys = S.loc.system; selDest = null; }
     var D = G.data(), all = D.systemList, cur = G.curSystem(S);
     var nbIds = G.neighbors(S).map(function (n) { return n.id; });
     var sects = Object.keys(D.sectors), bb = {};
@@ -777,7 +779,7 @@
     if (q.ok) { any = true; yardRepair(v, q); }
     if (G.hasService(S, 'shipyard')) { any = true; yardShop(v); }
     var hc = cargoCard(); if (hc) { any = true; v.appendChild(hc); }
-    if (G.hasService(S, 'loan')) { any = true; yardLoan(v); }
+    if (G.loanDesk(S) && S.loan && (S.loan.balance > 0 || G.hasService(S, 'loan'))) { any = true; yardLoan(v); }
     if (G.hasService(S, 'insurance')) { any = true; yardInsurance(v); }
     if (!any) v.appendChild(h('div', { class: 'card', text: '這裡沒有船塢服務。' }));
   }
@@ -797,13 +799,15 @@
     var L = S.loan, card = h('div', { class: 'card', id: 'loancard' }, [h('h3', { text: '船貸' })]);
     if (L.balance <= 0) { card.appendChild(h('div', { class: 'ok', text: '船貸已經還清了。' })); v.appendChild(card); return; }
     var req = G.loanRequired(S), short = G.loanShort(S), hl = G.loanHoursLeft(S);
+    var desk = G.loanDesk(S), sf = short > 0 ? G.loanFee(S, short) : 0;
+    if (desk && desk.remote) card.appendChild(h('div', { class: 'sm warn', text: '這裡不是港務聯盟的設施，只能匯款繳船貸，手續費 ' + Math.round(desk.fee * 100) + '%。回聯盟設施（錨點星區）繳不收手續費。' }));
     card.appendChild(h('div', { html: '餘額 <b>' + fmt(L.balance) + '</b>' }));
     card.appendChild(h('div', { html: '本期應繳 <b>' + fmt(req) + '</b>，本期已繳 <b>' + fmt(L.paid) + '</b>' + (short > 0 ? '，還差 <b class="warn">' + fmt(short) + '</b>' : '，<span class="ok">本期已繳清</span>') }));
     card.appendChild(h('div', { class: 'sm ' + (hl <= 24 ? 'warn' : 'dim'), text: '下次到期：' + G.fmtClock(L.nextDue) + '（還有 ' + hl + ' 小時）' }));
     if (L.missed > 0) card.appendChild(h('div', { class: 'sm bad', text: '已連續逾期 ' + L.missed + ' 期。' }));
     card.appendChild(h('div', { class: 'sm dim', style: 'margin-top:4px', text: '每 7 天一期，到期先加 2% 利息；沒繳要加 500 違約金、聯盟聲望 −5。到期時間不會因為提早繳而延後。' }));
     var row = h('div', { class: 'row wrap', style: 'margin-top:8px' });
-    row.appendChild(h('button', { class: 'btn', id: 'payPeriod', disabled: short <= 0 || S.money < short, text: '繳本期' + (short > 0 ? '（' + fmt(short) + '）' : ''), onclick: function () { act(G.payLoanPeriod(S)); } }));
+    row.appendChild(h('button', { class: 'btn', id: 'payPeriod', disabled: short <= 0 || S.money < short + sf, text: '繳本期' + (short > 0 ? '（' + fmt(short) + (sf ? '＋手續費 ' + fmt(sf) : '') + '）' : ''), onclick: function () { act(G.payLoanPeriod(S)); } }));
     card.appendChild(row);
     var inp = h('input', { type: 'number', id: 'loanAmt', min: 1, inputmode: 'numeric', placeholder: '多還一點：輸入金額', value: loanAmt, oninput: function (e) { loanAmt = e.target.value; } });
     card.appendChild(h('div', { class: 'row', style: 'margin-top:8px' }, [inp, h('button', { class: 'btn sec', id: 'payExtra', style: 'white-space:nowrap', text: '還款', onclick: function () {

@@ -308,6 +308,14 @@
   var REPAIR_COST = 15;
   function dockedFac(save) { return save.loc.docked && save.loc.facility ? D.facs[save.loc.facility] : null; }
   function hasService(save, sv) { var fc = dockedFac(save); return !!fc && fc.services.indexOf(sv) >= 0; }
+  // 11/22：船貸原本只有錨港能繳，跑遠就被迫逾期。聯盟設施免手續費；其他停靠點可以匯款，手續費 5%
+  var LOAN_WIRE_FEE = 0.05;
+  function loanDesk(save) {
+    var fc = dockedFac(save); if (!fc) return null;
+    if (fc.owner === 'league' || fc.services.indexOf('loan') >= 0) return { fee: 0, remote: false };
+    return { fee: LOAN_WIRE_FEE, remote: true };
+  }
+  function loanFee(save, amount) { var d = loanDesk(save); return d ? Math.ceil(amount * d.fee) : 0; }
   function repairQuote(save) {
     var fc = dockedFac(save);
     if (!fc || fc.services.indexOf('repair') < 0) return { ok: false, msg: '這裡沒有船塢。' };
@@ -360,13 +368,15 @@
     L.paid = 0; L.nextDue += LOAN.period;
   }
   function payLoan(save, amount) {
-    if (!hasService(save, 'loan')) return { ok: false, msg: '這裡沒有船貸櫃檯。' };
+    if (!loanDesk(save)) return { ok: false, msg: '要停靠在設施才能繳船貸。' };
     var L = save.loan; if (L.balance <= 0) return { ok: false, msg: '船貸已經還清了。' };
     amount = Math.floor(amount);
     if (!(amount >= 1)) return { ok: false, msg: '金額要至少 1。' };
     amount = Math.min(amount, L.balance);
-    if (amount > save.money) return { ok: false, msg: '信用點不夠（要 ' + amount.toLocaleString() + '）。' };
-    save.money -= amount; L.balance -= amount; L.paid += amount;
+    var fee = loanFee(save, amount);
+    if (amount + fee > save.money) return { ok: false, msg: '信用點不夠（要 ' + (amount + fee).toLocaleString() + (fee ? '，含匯款手續費 ' + fee.toLocaleString() : '') + '）。' };
+    save.money -= amount + fee; L.balance -= amount; L.paid += amount;
+    if (fee) addLog(save, '透過匯款繳船貸，手續費 ' + fee.toLocaleString() + '。', 'loan');
     if (L.balance > 0 && loanShort(save) <= 0) L.missed = 0;
     if (L.balance <= 0) {
       L.balance = 0; L.nextDue = null; L.paid = 0; L.missed = 0;
@@ -678,6 +688,41 @@
     if (ambush) st.log.push({ t: 1, k: 'start', x: '你被伏擊了，對方已經貼近。' });
     if (enc.enemies.indexOf('enemy_elite_flagship') >= 0) st.log.push({ t: 1, k: 'start', x: '血旗艦的通訊只有一句：「血旗艦不談條件。」' });
     return st;
+  }
+  // 11/22：任務卡的勝算估計。用和艦橋一樣的戰鬥引擎，以簡單打法模擬幾十場（不影響存檔的亂數）
+  var oddsCache = {};
+  function autoFight(st) {
+    var guard = 0;
+    while (!st.over && guard++ < 80) {
+      var o = Combat.options(st), me = o.me;
+      var t = o.targets.slice().sort(function (a, b) { return (a.hull + a.armor) - (b.hull + b.armor); })[0];
+      if (!t) break;
+      var m = (t.range === 'far' || t.range === 'mid') ? 'approach' : t.adv < 1 ? 'flank' : 'tail';
+      var need = st.player.guns.reduce(function (a, g) { return a + g.energy; }, 0), E = st.player.energy, w = Math.max(0, Math.min(need, E - 2));
+      var rest = E - w, sh = Math.ceil(rest / 2);
+      Combat.step(st, { m: m, target: t.id, alloc: { w: w, s: sh, e: rest - sh },
+        fire: st.player.guns.map(function (g, i) { return { gun: i, target: t.id }; }),
+        missile: st.player.missiles.map(function (mm, i) { return { idx: i, target: t.id }; }) });
+    }
+    return st.over;
+  }
+  function winOdds(save, enemies, n) {
+    if (!enemies || !enemies.length) return null;
+    n = n || 40;
+    var p = save.player, sh = save.ship;
+    var key = enemies.join(',') + '|' + sh.hull + '|' + JSON.stringify(sh.loadout) + '|' + sh.hp.hull + '/' + sh.hp.armor + '|' + p.stats.pilot + '/' + p.stats.gunnery;
+    if (oddsCache[key] != null) return oddsCache[key];
+    var win = 0;
+    for (var i = 0; i < n; i++) {
+      try {
+        var st = Combat.create({ data: D.combatData,
+          player: { name: p.name, stats: { pilot: p.stats.pilot, gunnery: p.stats.gunnery },
+            ship: { hull: sh.hull, hp: { hull: sh.hp.hull, armor: sh.hp.armor }, loadout: sh.loadout, ammo: clone(sh.ammo || {}) } },
+          enemies: enemies.slice(), seed: 7919 * (i + 1), opening: { range: 'mid' } });
+        if (autoFight(st) === 'win') win++;
+      } catch (e) { return null; }
+    }
+    return (oddsCache[key] = win / n);
   }
   function battleStep(save, order) {
     var b = save.battle; if (!b || b.state.over) return null;
@@ -1024,6 +1069,14 @@
   function missionWarn(save, o) {
     var t = o && o.tpl ? D.tpl[o.tpl] : null, en = t && t.enemies, foes = (o && o.foes) || [], possible = foes.slice(), maxN = foes.length;
     if (en) { possible = possible.concat(en.fixed || [], en.pool || []); maxN = Math.max(maxN, (en.fixed || []).length + (en.count ? en.count[1] : 0)); }
+    // 11/22：先用模擬勝率判斷（實測驢級對突擊艇＋劫掠艇 7 回合被打爆，舊規則不會警告）
+    var odds = foes.length ? winOdds(save, foes) : null;
+    if (odds != null) {
+      var pct = Math.round(odds * 100);
+      if (odds < 0.4) return { level: 'bad', text: '以你現在的船，這趟很吃力（模擬勝率約 ' + pct + '%）' };
+      if (odds < 0.7) return { level: 'warn', text: '有風險（模擬勝率約 ' + pct + '%）' };
+      return null;
+    }
     if (!possible.some(function (f) { return HEAVY_FOES.indexOf(f) >= 0; }) && maxN < 3) return null;
     var lo = loadoutView(save), weapons = lo.gun.concat(lo.missile).filter(Boolean);
     var weak = save.ship.hull === 'donkey' && weapons.every(function (id) { return D.equip[id].tier === 1; });
@@ -1144,7 +1197,7 @@
     status: status, banned: banned, board: board, quote: quote, maxBuy: maxBuy, sellPreview: sellPreview, buy: buy, sell: sell,
     repairQuote: repairQuote, repair: repair, REPAIR_COST: REPAIR_COST, dockedFac: dockedFac, hasService: hasService,
     loanActive: loanActive, loanRequired: loanRequired, loanShort: loanShort, loanHoursLeft: loanHoursLeft, loanOverdue: loanOverdue,
-    payLoan: payLoan, payLoanPeriod: payLoanPeriod, addDebt: addDebt,
+    winOdds: winOdds, payLoan: payLoan, payLoanPeriod: payLoanPeriod, addDebt: addDebt, loanDesk: loanDesk, loanFee: loanFee,
     bountyTotal: bountyTotal, canClaimBounty: canClaimBounty, claimBounties: claimBounties,
     insured: insured, insurancePremium: insurancePremium, buyInsurance: buyInsurance,
     curSystem: curSystem, rollEncounter: rollEncounter, neighbors: neighbors, travelPreview: travelPreview, depart: depart, arrive: arrive, ENC_NAME: ENC_NAME,
