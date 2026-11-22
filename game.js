@@ -1204,10 +1204,12 @@
     var hasBanned = save.cargo.some(function (c) {
       return c.qty > 0 && Object.keys(D.factions).some(function (k) { return (D.factions[k].banned || []).indexOf(c.id) >= 0; });
     });
-    if (hasBanned || save.parley) {
+    var patrolSeen = recent.some(function (x) { return x.indexOf('巡邏艦') >= 0; }); // 貨被沒收後貨艙已空，但日誌還有攔檢那一行，AI 會自己編哨門
+    if (hasBanned || save.parley || patrolSeen) {
       L.push('・走私只有「巡邏艦攔檢」這一種機制；NPC 不要編航線、哨點或掃描位置' + (holdCap(save) > 0
         ? '；船上有藏貨夾層，藏進去的貨不會被掃到，其餘照航行資料'
         : '；這艘船沒有藏貨夾層（要到船塢買改裝件），不要叫玩家敲艙壁、找暗格或說舊船主動過手腳'));
+      if (patrolSeen) L.push('・巡邏艦攔檢發生在兩站之間的航道上，沒有哨門或檢查站；港口人員不會「接到哨點通報」，只能照上面日誌所寫');
     }
     if (mkLine) L.push('・NPC 提到哪種貨缺、哪種貨好賣時，照「本站市場」寫，不要自己編；成交價只看艦橋市場');
     pr.forEach(function (x) {
