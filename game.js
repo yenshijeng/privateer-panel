@@ -1177,6 +1177,14 @@
     L.push('・數字照抄航行資料；任何人（含 NPC）都不能替玩家買賣、移動、改裝；不寫船飛到別的系統');
     if (save.parley) L.push('・對方的條件是「' + demandText(save.parley.demand) + '」；玩家的選擇只能寫成 parley 事件，不要自己決定結果');
     if (!save.loc.docked) L.push('・現在在太空中，沒有酒吧與市場；只描寫艦橋、通訊與窗外');
+    var hasBanned = save.cargo.some(function (c) {
+      return c.qty > 0 && Object.keys(D.factions).some(function (k) { return (D.factions[k].banned || []).indexOf(c.id) >= 0; });
+    });
+    if (hasBanned || save.parley) {
+      L.push('・走私只有「巡邏艦攔檢」這一種機制；NPC 不要編航線、哨點或掃描位置' + (holdCap(save) > 0
+        ? '；船上有藏貨夾層，藏進去的貨不會被掃到，其餘照航行資料'
+        : '；這艘船沒有藏貨夾層（要到船塢買改裝件），不要叫玩家敲艙壁、找暗格或說舊船主動過手腳'));
+    }
     if (mkLine) L.push('・NPC 提到哪種貨缺、哪種貨好賣時，照「本站市場」寫，不要自己編；成交價只看艦橋市場');
     pr.forEach(function (x) {
       if (x.open) L.push('・' + x.name + '的親密互動已開放，須雙方合意；玩家沒有表示意願時不主動推進');
