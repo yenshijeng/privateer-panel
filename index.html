@@ -63,7 +63,10 @@ svg text{font-family:inherit}
 #mbtn{position:fixed;right:10px;bottom:calc(var(--tab) + 12px + env(safe-area-inset-bottom));z-index:55;width:40px;height:40px;border-radius:20px;border:1px solid var(--line);background:#141b30cc;color:var(--tx);font-size:18px;cursor:pointer}
 #mbtn.on{border-color:var(--acc);color:var(--acc)}
 #music{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--tab) + 58px + env(safe-area-inset-bottom));width:calc(100% - 20px);max-width:500px;z-index:54;border-radius:12px;overflow:hidden;box-shadow:0 4px 18px #0008;height:0;pointer-events:none}
-#music.show{height:150px;pointer-events:auto}
+#music.show{height:186px;pointer-events:auto}
+#music .mtabs{display:flex;gap:6px;padding:4px 6px;background:#0e1424;height:36px;box-sizing:border-box}
+#music .mtabs button{flex:1;border:1px solid var(--line);background:#141b30;color:var(--tx);border-radius:8px;font-size:13px;cursor:pointer}
+#music .mtabs button.on{border-color:var(--acc);color:var(--acc)}
 #music iframe{width:100%;height:150px;border:0;display:block}
 </style>
 </head>
@@ -78,13 +81,13 @@ svg text{font-family:inherit}
 <button id="mbtn" title="背景音樂">🎵</button>
 <div id="music"></div>
 <div id="modal"><div class="box"></div></div>
-<script>window.XY_BUILD="20261122p";</script>
-<script src="combat.js?v=20261122p"></script>
-<script src="econ.js?v=20261122p"></script>
-<script src="missions.js?v=20261122p"></script>
-<script src="game.js?v=20261122p"></script>
-<script src="ai.js?v=20261122p"></script>
-<script src="bridge.js?v=20261122p"></script>
-<script src="ui.js?v=20261122p"></script>
+<script>window.XY_BUILD="20261126q";</script>
+<script src="combat.js?v=20261126q"></script>
+<script src="econ.js?v=20261126q"></script>
+<script src="missions.js?v=20261126q"></script>
+<script src="game.js?v=20261126q"></script>
+<script src="ai.js?v=20261126q"></script>
+<script src="bridge.js?v=20261126q"></script>
+<script src="ui.js?v=20261126q"></script>
 </body>
 </html>

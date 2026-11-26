@@ -1102,14 +1102,31 @@
 
   // 背景音樂（Suno 嵌入）：第一次按 🎵 才載入播放器（瀏覽器要求使用者先點過才能自動播放）；
   // 之後按 🎵 只收合／展開播放器，iframe 不移除，所以切換分頁、收起艦橋都不會中斷音樂。
-  var MUSIC_URL = 'https://suno.com/embed/75342d1f-182d-4c6b-8c91-7109636b9061?autoplay=1';
+  // 兩首曲子：播放器上方的選曲按鈕切換（Suno 嵌入一次只放一首，換歌會從頭播）。
+  var TRACKS = [
+    { name: '銀河私掠者', url: 'https://suno.com/embed/75342d1f-182d-4c6b-8c91-7109636b9061?autoplay=1' },
+    { name: '星海無冕王', url: 'https://suno.com/embed/0c41a13e-8167-4055-8fcb-e196f128ee2b?autoplay=1' }
+  ];
   (function () {
     var b = $('mbtn'), box = $('music'); if (!b || !box) return;
+    var cur = 0, frame = null, tabs = null;
+    function play(i) {
+      cur = i;
+      if (frame) frame.src = TRACKS[i].url;
+      if (tabs) [].forEach.call(tabs.children, function (x, k) { x.className = k === i ? 'on' : ''; });
+    }
     b.onclick = function () {
-      if (!box.firstChild) {
-        var f = document.createElement('iframe');
-        f.src = MUSIC_URL; f.setAttribute('allow', 'autoplay; encrypted-media'); f.setAttribute('title', '背景音樂');
-        box.appendChild(f);
+      if (!frame) {
+        tabs = document.createElement('div'); tabs.className = 'mtabs';
+        TRACKS.forEach(function (t, i) {
+          var x = document.createElement('button'); x.type = 'button'; x.textContent = '♪ ' + t.name;
+          x.onclick = function () { if (i !== cur) play(i); setShow(true); };
+          tabs.appendChild(x);
+        });
+        frame = document.createElement('iframe');
+        frame.setAttribute('allow', 'autoplay; encrypted-media'); frame.setAttribute('title', '背景音樂');
+        box.appendChild(tabs); box.appendChild(frame);
+        play(cur);
       }
       setShow(box.className !== 'show'); b.className = 'on';
     };
